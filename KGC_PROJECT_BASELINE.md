@@ -4,7 +4,7 @@
 >
 > Purpose: This document is the shared development baseline for the project. Future development conversations should start from this file and update it when scope, status, or decisions change.
 >
-> Last updated: 2026-07-21
+> Last updated: 2026-07-24
 
 ## 1. Current Objective
 
@@ -213,6 +213,27 @@ This section records the verified local development environment as of 2026-07-21
 
 For a future server deployment, set a non-empty database password and provide it through the server environment rather than changing the source file.
 
+### 7.2 Version Control and Collaboration Baseline
+
+This section records the verified code-management baseline as of 2026-07-24.
+
+| Item | Current verified value |
+| --- | --- |
+| Local VCS | Git repository initialized successfully in `F:\KGC`. |
+| Main branch | `main` |
+| Initial baseline commit | `9e953f4 chore: establish project baseline` |
+| Initial committed scope | 91 key project files, including the Spring Boot backend, static frontend demo, baseline/design documents, dependency files, and project support files selected for source collaboration. |
+| GitHub account | `Yujin-Wu-xtu` |
+| GitHub repository | `https://github.com/Yujin-Wu-xtu/KGC` |
+| Remote tracking | Local `main` is connected to `origin/main`. |
+| GitHub tooling | GitHub CLI (`gh`) installed and authenticated through browser Device Code authorization. |
+| Push/auth strategy | Use HTTPS plus the `gh` credential helper path. This avoids the Windows Chinese-user-path SSH key issue observed under `C:\Users\吴育锦`. |
+| Repository visibility | Public GitHub repository. Avoid committing credentials, private deployment configuration, large generated packages, and transient local runtime files. |
+
+The incorrect temporary GitHub username spelling `Yvjin` has been corrected to the actual account `Yujin-Wu-xtu`.
+
+Future collaboration should use Git as the default checkpoint mechanism. Keep `main` demonstrable and reasonably stable. For larger milestones, create short-lived feature branches such as `phase-1-course-resource-backbone`, commit coherent changes with clear messages, then merge back after verification.
+
 ## 8. Working Rules for Future Development Conversations
 
 1. Start from this document and identify the active roadmap phase.
@@ -221,6 +242,8 @@ For a future server deployment, set a non-empty database password and provide it
 4. Update this file whenever an architectural decision, roadmap item, acceptance criterion, or implementation status changes materially.
 5. Before moving to a later phase, verify the current phase with a real end-to-end workflow.
 6. Keep the system demoable at all times. Avoid large refactors that temporarily break the existing presentation unless they are necessary for the active milestone.
+7. Use Git commits as project checkpoints. Before substantial edits, inspect `git status`; after a coherent change, verify behavior and commit with a clear message.
+8. Continue using HTTPS plus `gh` authentication for GitHub operations unless the Windows SSH key path issue is deliberately reconfigured later.
 
 ## 9. Immediate Next Step
 
@@ -240,3 +263,4 @@ This ordering prevents later graph and student-learning work from being built on
 | 2026-07-21 | Added email and mobile-number registration plus username/email/mobile login. Added the deployable `register.html` page and replaced the login page's mock redirect with real authentication API calls. Verification-code delivery remains deferred because no email/SMS provider has been selected. |
 | 2026-07-21 | Configured the local-default `kgc_db` datasource to read URL/username/password from `KGC_DB_URL`/`KGC_DB_USERNAME`/`KGC_DB_PASSWORD` with local defaults, and enabled Hibernate `ddl-auto=update` automatic schema synchronization. |
 | 2026-07-21 | Verified the local XAMPP MariaDB integration: the backend started against `kgc_db`, Hibernate initialized the schema, and registration of the `test1` user succeeded. Documented the current passwordless local development database baseline. |
+| 2026-07-24 | Established the Git/GitHub collaboration baseline: initialized the local Git repository, set `main` as the primary branch, committed 91 key files as baseline commit `9e953f4`, installed and authenticated GitHub CLI, created and pushed to `https://github.com/Yujin-Wu-xtu/KGC`, corrected the temporary username typo from `Yvjin` to `Yujin`, and selected HTTPS plus `gh` credential helper as the stable push strategy. |
