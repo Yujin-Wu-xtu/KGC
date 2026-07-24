@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知微智学 - 课程图谱管理</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-w: 260px;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .logo-area {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-area h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .nav-menu { padding: 24px 16px; flex: 1; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover { background-color: #f8fafc; color: var(--primary); }
+        .nav-item.active { background-color: #eff6ff; color: var(--primary); }
+        .nav-icon { margin-right: 12px; font-size: 18px; }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .header {
+            height: 70px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .page-title { font-size: 18px; font-weight: 600; margin: 0; }
+
+        .btn-add {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(37,99,235,0.2);
+        }
+
+        .btn-add:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 6px 12px rgba(37,99,235,0.3); }
+
+        .container {
+            padding: 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Filter bar */
+        .filter-bar { display: flex; justify-content: space-between; margin-bottom: 24px; }
+        .search-box { padding: 10px 16px; border: 1px solid var(--border); border-radius: 8px; width: 300px; outline: none; }
+
+        /* Course Grid */
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .course-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .course-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            border-color: #cbd5e1;
+        }
+
+        .course-cover { height: 140px; position: relative; }
+        .cover-1 { background: url('数据结构封面.jpeg') center/cover no-repeat; background-color: #3b82f6;}
+        .cover-2 { background: url('计算机组成原理(1).jpg') center/cover no-repeat; background-color: #10b981;}
+        .cover-3 { background: url('线性代数.jpg') center/cover no-repeat; background-color: #f59e0b;}
+        
+        /* 新建课程的默认动态封面背景 */
+        .cover-new { 
+            background: linear-gradient(135deg, #1e293b, #334155); 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 40px; color: rgba(255,255,255,0.2);
+        }
+
+        .course-tag {
+            position: absolute; top: 12px; right: 12px;
+            background: rgba(255,255,255,0.2); backdrop-filter: blur(4px);
+            color: white; padding: 4px 8px; border-radius: 4px;
+            font-size: 12px; font-weight: 500;
+        }
+        .course-tag.new-tag { background: var(--success); }
+
+        .course-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+        .course-title { margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: var(--text-dark); }
+        .course-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0 0 16px 0; flex: 1; }
+
+        .course-stats {
+            display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted);
+            margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+        }
+
+        .course-actions { display: flex; gap: 12px; }
+        .btn-action {
+            flex: 1; text-align: center; padding: 8px 0; border-radius: 6px;
+            text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s;
+        }
+        .btn-primary { background: #eff6ff; color: var(--primary); }
+        .btn-primary:hover { background: #dbeafe; }
+        .btn-secondary { background: #f8fafc; color: var(--text-dark); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: #f1f5f9; }
+
+        /* 新卡片入场动画 */
+        .card-enter { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideUp {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 模态弹窗 Modal UI */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 100; opacity: 0; pointer-events: none; transition: 0.3s;
+        }
+        .modal-overlay.show { opacity: 1; pointer-events: auto; }
+        
+        .modal-content {
+            background: white; border-radius: 16px; width: 480px; max-width: 90%;
+            padding: 32px; transform: translateY(20px); transition: 0.3s;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .modal-overlay.show .modal-content { transform: translateY(0); }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .modal-title { font-size: 20px; font-weight: 700; margin: 0; }
+        .modal-close { cursor: pointer; font-size: 24px; color: var(--text-muted); line-height: 1; }
+        .modal-close:hover { color: var(--text-dark); }
+
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--text-dark); }
+        .form-input, .form-select, .form-textarea {
+            width: 100%; box-sizing: border-box; padding: 12px 14px;
+            border: 1px solid var(--border); border-radius: 8px;
+            font-family: inherit; font-size: 14px; outline: none; transition: 0.2s;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { 
+            border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); 
+        }
+        .form-textarea { resize: vertical; min-height: 80px; }
+
+        .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; }
+        .btn-cancel { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); background: white; cursor: pointer; font-weight: 500; }
+        .btn-cancel:hover { background: #f8fafc; }
+        
+        .btn-submit { padding: 10px 24px; border-radius: 8px; border: none; background: var(--primary); color: white; cursor: pointer; font-weight: 600; position: relative; }
+        .btn-submit:hover { background: var(--primary-hover); }
+        
+        /* 提交加载状态 */
+        .btn-loading { color: transparent !important; pointer-events: none; }
+        .btn-loading::after {
+            content: ''; position: absolute; width: 16px; height: 16px;
+            top: 0; left: 0; right: 0; bottom: 0; margin: auto;
+            border: 2px solid transparent; border-top-color: white; border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo-area">
+            <h1>知微智学</h1>
+        </div>
+        <nav class="nav-menu">
+            <a href="dashboard.html" class="nav-item">
+                <span class="nav-icon">📊</span> 工作台首页
+            </a>
+            <a href="courses.html" class="nav-item active">
+                <span class="nav-icon">📚</span> 课程管理
+            </a>
+            <a href="resources.html" class="nav-item">
+                <span class="nav-icon">📁</span> 教学资源库
+            </a>
+            <a href="index.html" class="nav-item">
+                <span class="nav-icon">🪄</span> 知识图谱生成池
+            </a>
+            <a href="settings.html" class="nav-item">
+                <span class="nav-icon">⚙️</span> 模型调优设置
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <h2 class="page-title">我管理的课程图谱库</h2>
+            <div class="header-actions">
+                <button class="btn-add" onclick="openModal()">＋ 初始化新课程</button>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="filter-bar">
+                <input type="text" class="search-box" placeholder="搜索课程名称或知识点...">
+                <select style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none;">
+                    <option>所有专业</option>
+                    <option>计算机科学与技术</option>
+                    <option>软件工程</option>
+                </select>
+            </div>
+
+            <div class="course-grid" id="courseGrid">
+                
+                <div class="course-card">
+                    <div class="course-cover cover-1">
+                        <span class="course-tag">专业核心课</span>
+                    </div>
+                    <div class="course-body">
+                        <h3 class="course-title">数据结构与算法</h3>
+                        <p class="course-desc">计算机科学底层基石课程，包含基本线性结构、树、图，以及常见查找与排序算法逻辑深度图谱。</p>
+                        <div class="course-stats">
+                            <span>包含资源：12 个</span>
+                            <span>图谱节点：840 节点</span>
+                        </div>
+                        <div class="course-actions">
+                            <a href="index.html" class="btn-action btn-primary">进入图谱实验室</a>
+                            <a href="resources.html" class="btn-action btn-secondary">管理资料</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="course-card">
+                    <div class="course-cover cover-2">
+                        <span class="course-tag">专业核心课</span>
+                    </div>
+                    <div class="course-body">
+                        <h3 class="course-title">计算机组成原理</h3>
+                        <p class="course-desc">深入系统底层运行逻辑，主要图谱章节涉及指令系统、中央处理器、总线网络及输入输出机制。</p>
+                        <div class="course-stats">
+                            <span>包含资源：4 个</span>
+                            <span>图谱节点：220 节点</span>
+                        </div>
+                        <div class="course-actions">
+                            <a href="index.html" class="btn-action btn-primary">进入图谱实验室</a>
+                            <a href="resources.html" class="btn-action btn-secondary">管理资料</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="course-card">
+                    <div class="course-cover cover-3">
+                        <span class="course-tag">平台基础课</span>
+                    </div>
+                    <div class="course-body">
+                        <h3 class="course-title">线性代数</h3>
+                        <p class="course-desc">数学与人工智能的基石。图谱涵盖了矩阵运算、向量空间、行列式及特征值分解等核心理论及应用链路。</p>
+                        <div class="course-stats">
+                            <span>包含资源：5 个</span>
+                            <span>图谱节点：305 节点</span>
+                        </div>
+                        <div class="course-actions">
+                            <a href="index.html" class="btn-action btn-primary">进入图谱实验室</a>
+                            <a href="resources.html" class="btn-action btn-secondary">管理资料</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="newCourseModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">创建新课程图谱库</h3>
+                    <div class="modal-close" onclick="closeModal()">&times;</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">课程名称 <span style="color: red;">*</span></label>
+                    <input type="text" id="inputCourseName" class="form-input" placeholder="例如：数字逻辑与数字电路">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">课程标签</label>
+                    <select id="inputCourseTag" class="form-select">
+                        <option value="专业核心课">专业核心课</option>
+                        <option value="专业选修课">专业选修课</option>
+                        <option value="公共基础课">公共基础课</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">课程简介 (用于辅助大模型划定知识边界)</label>
+                    <textarea id="inputCourseDesc" class="form-textarea" placeholder="简要描述该课程涉及的核心理论范围..."></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn-cancel" onclick="closeModal()">取消</button>
+                    <button class="btn-submit" id="submitBtn" onclick="submitCourse()">确认创建</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // 1. 定义默认的三门课程
+        const defaultCourses = [
+            { id: 'course_1', title: '数据结构与算法', tag: '专业核心课', desc: '计算机科学底层基石课程，包含基本线性结构、树、图，以及常见查找与排序算法逻辑深度图谱。', resourceCount: 12, nodeCount: 840, coverClass: 'cover-1', isNew: false },
+            { id: 'course_2', title: '计算机组成原理', tag: '专业核心课', desc: '深入系统底层运行逻辑，主要图谱章节涉及指令系统、中央处理器、总线网络及输入输出机制。', resourceCount: 4, nodeCount: 220, coverClass: 'cover-2', isNew: false },
+            { id: 'course_3', title: '线性代数', tag: '平台基础课', desc: '数学与人工智能的基石。图谱涵盖了矩阵运算、向量空间、行列式及特征值分解等核心理论及应用链路。', resourceCount: 5, nodeCount: 305, coverClass: 'cover-3', isNew: false }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let savedCourses = localStorage.getItem('kgc_courses');
+            if (!savedCourses) {
+                localStorage.setItem('kgc_courses', JSON.stringify(defaultCourses));
+                savedCourses = JSON.stringify(defaultCourses);
+            }
+            renderCourses(JSON.parse(savedCourses));
+        });
+
+        // 2. 渲染课程卡片到页面
+        function renderCourses(courses) {
+            const grid = document.getElementById('courseGrid');
+            grid.innerHTML = ''; 
+            
+            for (let i = courses.length - 1; i >= 0; i--) {
+                const course = courses[i];
+                let coverContent = course.isNew ? `📖<span class="course-tag new-tag">${course.tag}</span>` : `<span class="course-tag">${course.tag}</span>`;
+                let titleContent = course.isNew ? `${course.title} <span style="font-size: 12px; color: var(--success); margin-left: 4px;">● 新建</span>` : course.title;
+                
+                const cardHTML = `
+                    <div class="course-card">
+                        <div class="course-cover ${course.coverClass}">
+                            ${coverContent}
+                        </div>
+                        <div class="course-body">
+                            <h3 class="course-title">${titleContent}</h3>
+                            <p class="course-desc">${course.desc}</p>
+                            <div class="course-stats">
+                                <span style="${course.isNew ? 'color: #f59e0b; font-weight: 500;' : ''}">包含资源：${course.resourceCount} 个 ${course.isNew ? '(待上传)' : ''}</span>
+                                <span style="${course.isNew ? 'color: #f59e0b; font-weight: 500;' : ''}">图谱节点：${course.nodeCount} 节点 ${course.isNew ? '(待解析)' : ''}</span>
+                            </div>
+                            <div class="course-actions">
+                                <a href="index.html" class="btn-action btn-primary">进入图谱实验室</a>
+                                <a href="resources.html?courseId=${course.id}" class="btn-action btn-secondary">管理资料</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += cardHTML;
+            }
+        }
+
+        function openModal() {
+            document.getElementById('newCourseModal').classList.add('show');
+            document.getElementById('inputCourseName').value = '';
+            document.getElementById('inputCourseDesc').value = '';
+        }
+
+        function closeModal() { document.getElementById('newCourseModal').classList.remove('show'); }
+
+        function submitCourse() {
+            const nameInput = document.getElementById('inputCourseName').value.trim();
+            const tagInput = document.getElementById('inputCourseTag').value;
+            const descInput = document.getElementById('inputCourseDesc').value.trim() || "该课程暂无简介，大模型将根据后续上传的课件自动解析知识体系。";
+            
+            if (!nameInput) { alert("请输入课程名称！"); return; }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.classList.add('btn-loading'); 
+
+            setTimeout(() => {
+                submitBtn.classList.remove('btn-loading');
+                closeModal();
+
+                const newCourse = {
+                    id: 'course_' + Date.now(), // 生成唯一ID
+                    title: nameInput,
+                    tag: tagInput,
+                    desc: descInput,
+                    resourceCount: 0,
+                    nodeCount: 0,
+                    coverClass: 'cover-new',
+                    isNew: true
+                };
+
+                let courses = JSON.parse(localStorage.getItem('kgc_courses')) || [];
+                courses.push(newCourse);
+                localStorage.setItem('kgc_courses', JSON.stringify(courses));
+                renderCourses(courses);
+
+            }, 800); 
+        }
+    </script>
+</body>
+</html>

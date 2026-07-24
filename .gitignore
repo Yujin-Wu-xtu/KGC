@@ -1,0 +1,58 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Local runtime configuration and secrets ###
+.env
+.env.*
+!.env.example
+application-local.properties
+src/main/resources/application-local.properties
+Neo4j-*-Created-*.txt
+token.txt
+fileid.txt
+
+### Local uploads and logs ###
+uploads/
+kgc_uploads/
+*.log
+
+### Packaged/demo archives and generated binaries ###
+*.jar
+*.zip
+*.rar
+知微智学_作品运行包/
+计设相关资料/
+
+### Large local media kept outside source control ###
+*.mp4

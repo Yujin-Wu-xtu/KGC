@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知微智学 - 教师端工作台</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://fastly.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <style>
+        :root {
+            --sidebar-w: 260px;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --ai-glow: rgba(56, 189, 248, 0.5);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .logo-area {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-area h1 {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(to right, #2563eb, #10b981);
+            -webkit-background-clip: text;
+            color: transparent;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-menu {
+            padding: 24px 16px;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            background-color: #f8fafc;
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background-color: #eff6ff;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        /* Header */
+        .header {
+            height: 70px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .page-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        /* Dashboard Content */
+        .container {
+            padding: 32px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* AI Banner with Glassmorphism Dropzone */
+        .welcome-banner {
+            position: relative;
+            background: #0f172a;
+            border-radius: 16px;
+            padding: 32px 40px;
+            color: white;
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
+        }
+
+        /* 霓虹光晕背景特效 */
+        .welcome-banner::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(37,99,235,0.4) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .welcome-banner::after {
+            content: '';
+            position: absolute;
+            bottom: -100px;
+            right: 20%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(16,185,129,0.2) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .banner-text {
+            position: relative;
+            z-index: 2;
+            max-width: 50%;
+        }
+
+        .banner-text h2 {
+            margin: 0 0 12px 0;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .banner-text p {
+            margin: 0;
+            color: #94a3b8;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .ai-badge {
+            display: inline-block;
+            background: rgba(56, 189, 248, 0.1);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        /* 快捷拖拽区 */
+        .quick-dropzone {
+            position: relative;
+            z-index: 2;
+            width: 400px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .quick-dropzone:hover {
+            border-color: #38bdf8;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+        }
+
+        .quick-dropzone .icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .quick-dropzone .title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #f8fafc;
+        }
+
+        .quick-dropzone .subtitle {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            border: 1px solid var(--border);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.05);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+
+        .stat-trendy {
+            font-size: 13px;
+            color: var(--success);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Layout Grid */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .panel {
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            padding: 24px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .view-all {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* Course Cards */
+        .course-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .course-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+        
+        .course-card:hover {
+            border-color: #cbd5e1;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .course-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 4px;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .course-card.blue::before { background: linear-gradient(to right, #3b82f6, #60a5fa); }
+        .course-card.green::before { background: linear-gradient(to right, #10b981, #34d399); }
+
+        .course-card h4 { margin: 8px 0; font-size: 16px; }
+        .course-card p { margin: 0 0 20px 0; font-size: 13px; color: var(--text-muted); }
+
+        .btn-outline {
+            display: inline-block;
+            background: white;
+            color: #0f172a;
+            border: 1px solid #cbd5e1;
+            padding: 6px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-outline:hover { background: #f1f5f9; border-color: #94a3b8; }
+
+        /* Live Activity Log (Cyberpunk feel) */
+        .activity-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .activity-item {
+            position: relative;
+            padding-left: 28px;
+            padding-bottom: 24px;
+        }
+
+        .activity-item:last-child { padding-bottom: 0; }
+
+        /* Timeline line */
+        .activity-item::before {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 20px;
+            bottom: -10px;
+            width: 2px;
+            background: var(--border);
+        }
+        .activity-item:last-child::before { display: none; }
+
+        /* Glowing Status Dots */
+        .status-dot {
+            position: absolute;
+            left: 0;
+            top: 4px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--border);
+            border: 2px solid white;
+        }
+
+        .status-dot.pulse-blue {
+            background: #3b82f6;
+            box-shadow: 0 0 8px #3b82f6;
+            animation: pulse 2s infinite;
+        }
+        .status-dot.pulse-green {
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+        }
+        .status-dot.pulse-yellow {
+            background: #f59e0b;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+
+        .act-content h4 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .act-content p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Monospace Time */
+        .act-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 6px;
+            display: block;
+        }
+
+        /* ECharts Container */
+        # trendChart {
+            width: 100%;
+            height: 250px;
+        }
+
+        /* Health Analysis Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-container {
+            background: var(--bg-card);
+            width: 900px;
+            max-height: 90vh;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            padding: 40px;
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-overlay.active .modal-container { transform: scale(1); }
+        .close-modal {
+            position: absolute;
+            top: 24px; right: 24px;
+            font-size: 24px; cursor: pointer; color: var(--text-muted);
+            transition: color 0.2s;
+        }
+        .close-modal:hover { color: var(--text-dark); }
+        
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 40px;
+            margin-top: 24px;
+        }
+        #radarChart { width: 100%; height: 400px; }
+        .ai-diagnostic {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 24px;
+            border-left: 5px solid var(--primary);
+        }
+        .diagnostic-item { margin-bottom: 20px; }
+        .diagnostic-item h5 { margin: 0 0 8px 0; color: var(--text-dark); font-size: 15px; display: flex; align-items: center; gap: 8px; }
+        .diagnostic-item p { margin: 0; color: var(--text-muted); font-size: 13px; line-height: 1.6; }
+        
+        .stat-card.clickable { cursor: pointer; position: relative; overflow: hidden; }
+        .stat-card.clickable:hover { border-color: var(--primary); box-shadow: 0 0 15px rgba(37, 99, 235, 0.1); }
+        .stat-card.clickable::after {
+            content: '点击分析';
+            position: absolute;
+            bottom: 8px; right: 12px;
+            font-size: 10px; color: var(--primary); font-weight: 600;
+            opacity: 0; transition: 0.2s;
+        }
+        .stat-card.clickable:hover::after { opacity: 1; }
+
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo-area">
+            <h1>知微智学</h1>
+        </div>
+        <nav class="nav-menu">
+            <a href="dashboard.html" class="nav-item active">
+                <span class="nav-icon">📊</span>
+                工作台首页
+            </a>
+            <a href="courses.html" class="nav-item">
+                <span class="nav-icon">📚</span>
+                课程管理
+            </a>
+            <a href="resources.html" class="nav-item">
+                <span class="nav-icon">📁</span>
+                教学资源库
+            </a>
+            <a href="index.html" class="nav-item">
+                <span class="nav-icon">🪄</span>
+                知识图谱生成池
+            </a>
+            <a href="settings.html" class="nav-item">
+                <span class="nav-icon">⚙️</span>
+                模型调优设置
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <h2 class="page-title">AI 工作台概览</h2>
+            <div class="header-actions">
+                <div style="font-size: 20px; cursor: pointer;">🔔</div>
+                <div class="profile" onclick="window.location.href='login.html'">
+                    <div class="avatar">吴</div>
+                    <div style="font-size: 14px; font-weight: 500;">吴老师 (退出)</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="welcome-banner">
+                <div class="banner-text">
+                    <div class="ai-badge">✨ DeepSeek Engine Active</div>
+                    <h2>下午好，吴老师！</h2>
+                    <p>您的《数据结构与算法》图谱已就绪。将教学大纲、课件或视频拖入右侧，让大语言模型即刻为您构建专属的结构化知识网络。</p>
+                </div>
+                <div class="quick-dropzone" onclick="window.location.href='resources.html'">
+                    <div class="icon">📥</div>
+                    <div class="title">一键构建图谱</div>
+                    <div class="subtitle">拖拽 PDF / PPTX / MP4 至此<br>支持单文件上限 50MB</div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">管理的课程总数 <span style="font-size: 16px;">📚</span></div>
+                    <div class="stat-value">5</div>
+                    <div class="stat-trendy">↑ 投入教学使用中</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">已解析文献资料 <span style="font-size: 16px;">📄</span></div>
+                    <div class="stat-value">34</div>
+                    <div class="stat-trendy">↑ 本周新增 12 份</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">累计提炼知识点 <span style="font-size: 16px;">🧠</span></div>
+                    <div class="stat-value">1,248</div>
+                    <div class="stat-trendy" style="color: #3b82f6;">由 DeepSeek 自动萃取</div>
+                </div>
+                <div class="stat-card clickable" onclick="openHealthAnalysis()">
+                    <div class="stat-label">图谱健康度预估 <span style="font-size: 16px;">⚕️</span></div>
+                    <div class="stat-value">96%</div>
+                    <div class="stat-trendy" style="color: #64748b;">网络关系密度良好</div>
+                </div>
+            </div>
+
+            <div class="layout-grid">
+                <div class="left-column">
+                    <div class="panel">
+                        <div class="panel-header" style="margin-bottom: 0;">
+                            <h3 class="panel-title"><span style="font-size: 18px;">📈</span> 大模型知识点萃取趋势 (近7日)</h3>
+                        </div>
+                        <div id="trendChart"></div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title"><span style="font-size: 18px;">🔥</span> 最近活跃课程图谱</h3>
+                            <a href="courses.html" class="view-all">查看全部课程 &rarr;</a>
+                        </div>
+                        <div class="course-grid">
+                            <div class="course-card blue">
+                                <h4>数据结构与算法</h4>
+                                <p>已生成 3 个大章图谱，关联 840 节点</p>
+                                <a href="index.html" class="btn-outline">进入图谱实验室</a>
+                            </div>
+                            <div class="course-card green">
+                                <h4>计算机组成原理</h4>
+                                <p>指令系统章节课件上传，排队解析中</p>
+                                <a href="index.html" class="btn-outline">跟踪解析进度</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title"><span style="font-size: 18px;">⚡</span> 调度系统动态</h3>
+                    </div>
+                    <ul class="activity-list">
+                        <li class="activity-item">
+                            <div class="status-dot pulse-blue"></div>
+                            <div class="act-content">
+                                <h4>DeepSeek 推理中</h4>
+                                <p>正在深度解析《第3章 存储系统.pdf》，当前上下文消耗 18k Tokens...</p>
+                                <span class="act-time">RUNNING · 00:00:45</span>
+                            </div>
+                        </li>
+                        <li class="activity-item">
+                            <div class="status-dot pulse-green"></div>
+                            <div class="act-content">
+                                <h4>文献解析队列就绪</h4>
+                                <p>《第2章 逻辑代数基础.pdf》已存入 OSS 资源库并进入处理队列。</p>
+                                <span class="act-time">SUCCESS · 2026-04-25 10:42:15</span>
+                            </div>
+                        </li>
+                        <li class="activity-item">
+                            <div class="status-dot pulse-green"></div>
+                            <div class="act-content">
+                                <h4>知识图谱构建完毕</h4>
+                                <p>自动萃取 25 个层级知识点，发现 3 处冲突并自动执行 LLM 仲裁纠错。</p>
+                                <span class="act-time">SUCCESS · 2026-04-25 09:15:30</span>
+                            </div>
+                        </li>
+                        <li class="activity-item">
+                            <div class="status-dot pulse-yellow"></div>
+                            <div class="act-content">
+                                <h4>Neo4j Aura 增量同步</h4>
+                                <p>数据结构图谱空间实体持久化合并操作完成。</p>
+                                <span class="act-time">INFO · 2026-04-24 18:30:00</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var chartDom = document.getElementById('trendChart');
+            var myChart = echarts.init(chartDom);
+            
+            // 构造科技感极强的渐变面积图
+            var option = {
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                    textStyle: { color: '#fff' },
+                    borderWidth: 0,
+                    axisPointer: { type: 'line', lineStyle: { color: '#38bdf8', type: 'dashed' } }
+                },
+                grid: {
+                    left: '2%',
+                    right: '4%',
+                    bottom: '10%',
+                    top: '15%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                    axisLine: { lineStyle: { color: '#e2e8f0' } },
+                    axisLabel: { color: '#64748b', fontFamily: 'Inter' }
+                },
+                yAxis: {
+                    type: 'value',
+                    splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } },
+                    axisLabel: { color: '#64748b', fontFamily: 'JetBrains Mono' }
+                },
+                series: [
+                    {
+                        name: '提炼节点数',
+                        type: 'line',
+                        smooth: true,
+                        symbol: 'circle',
+                        symbolSize: 8,
+                        itemStyle: { color: '#2563eb' },
+                        lineStyle: { width: 3, color: '#3b82f6' },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(59, 130, 246, 0.4)' },
+                                { offset: 1, color: 'rgba(59, 130, 246, 0.0)' }
+                            ])
+                        },
+                        data: [42, 85, 112, 65, 154, 210, 185]
+                    }
+                ]
+            };
+
+            myChart.setOption(option);
+
+            // 响应窗口自适应
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        });
+
+        // 图谱健康度分析模态框逻辑
+        let radarChartInstance = null;
+        function openHealthAnalysis() {
+            const overlay = document.getElementById('healthModal');
+            overlay.classList.add('active');
+            
+            // 初始化雷达图
+            setTimeout(() => {
+                if (!radarChartInstance) {
+                    radarChartInstance = echarts.init(document.getElementById('radarChartContainer'));
+                }
+                const option = {
+                    radar: {
+                        indicator: [
+                            { name: '知识覆盖率', max: 100 },
+                            { name: '逻辑关联度', max: 100 },
+                            { name: '语义一致性', max: 100 },
+                            { name: '资源丰富度', max: 100 },
+                            { name: '更新时效性', max: 100 }
+                        ],
+                        axisName: { color: '#64748b', fontSize: 12 },
+                        splitArea: { areaStyle: { color: ['rgba(255,255,255,0)', 'rgba(37, 99, 235, 0.05)'] } },
+                        axisLine: { lineStyle: { color: '#e2e8f0' } },
+                        splitLine: { lineStyle: { color: '#e2e8f0' } }
+                    },
+                    series: [{
+                        type: 'radar',
+                        data: [{
+                            value: [92, 85, 98, 75, 90],
+                            name: '当前图谱状态',
+                            areaStyle: { color: 'rgba(37, 99, 235, 0.4)' },
+                            lineStyle: { color: '#2563eb', width: 2 },
+                            symbol: 'none'
+                        }]
+                    }]
+                };
+                radarChartInstance.setOption(option);
+            }, 100);
+        }
+
+        function closeHealthAnalysis() {
+            document.getElementById('healthModal').classList.remove('active');
+        }
+
+        // 点击背景关闭
+        document.getElementById('healthModal').addEventListener('click', function(e) {
+            if (e.target === this) closeHealthAnalysis();
+        });
+    </script>
+
+    <!-- 图谱分析模态框 -->
+    <div class="modal-overlay" id="healthModal">
+        <div class="modal-container">
+            <span class="close-modal" onclick="closeHealthAnalysis()">&times;</span>
+            <h2 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700;">知微图谱智能分析报告</h2>
+            <p style="margin: 0 0 32px 0; color: var(--text-muted); font-size: 14px;">基于 DeepSeek LLM 对 Neo4j 全局知识网络的实时扫描</p>
+            
+            <div class="analysis-grid">
+                <div id="radarChartContainer" style="width: 100%; height: 400px;"></div>
+                <div class="ai-diagnostic">
+                    <h4 style="margin: 0 0 20px 0; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+                        <span>🧠</span> DeepSeek 诊断室
+                    </h4>
+                    
+                    <div class="diagnostic-item">
+                        <h5><span>✅</span> 结构稳健度极佳</h5>
+                        <p>图谱核心节点“数据结构”的中心度得分较高，与其下属 8 个子模块建立了稳固的树状与网状双重关联。</p>
+                    </div>
+                    
+                    <div class="diagnostic-item">
+                        <h5><span>⚠️</span> 发现知识碎片 (孤岛)</h5>
+                        <p>检测到 3 个孤立节点（如“B+树变体”），建议在下一次上传《索引优化.pdf》时加强其与主图谱的语义关联。</p>
+                    </div>
+                    
+                    <div class="diagnostic-item">
+                        <h5><span>🚀</span> 学习路径建议</h5>
+                        <p>当前“算法复杂度分析”节点的资源密度不足，AI 建议补充 2-3 个应用实例课件以提升学生的掌握深度。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 32px; text-align: right;">
+                <button class="btn-outline" style="padding: 10px 24px; background: var(--primary); color: white; border: none;" onclick="closeHealthAnalysis()">完成分析</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>KGC API 测试</title>
+</head>
+<body>
+
+<h2>KGC 文件上传接口（零号冲刺）</h2>
+//通过http://localhost:8081/test.html进入
+<form action="http://localhost:8081/api/v1/files/upload"
+      method="post"
+      enctype="multipart/form-data">
+
+    <p>
+        <label>选择文件:</label>
+        <input type="file" name="file" />
+    </p>
+    <p>
+        <label>课程ID:</label>
+        <input type="text" name="courseId" value="1" />
+    </p>
+    <p>
+        <input type="submit" value="开始上传" />
+    </p>
+
+</form>
+
+</body>
+</html>
