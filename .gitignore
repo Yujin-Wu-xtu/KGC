@@ -38,6 +38,7 @@ build/
 !.env.example
 application-local.properties
 src/main/resources/application-local.properties
+V-code-config.txt
 Neo4j-*-Created-*.txt
 token.txt
 fileid.txt

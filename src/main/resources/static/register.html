@@ -5,36 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>知微智学 - 注册</title>
     <style>
-        :root { --primary: #2563eb; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
+        :root { --primary: #2563eb; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; --danger: #dc2626; }
         * { box-sizing: border-box; }
         body { margin: 0; min-height: 100vh; font-family: Inter, "Microsoft YaHei", sans-serif; background: linear-gradient(135deg, #eff6ff, #f8fafc); color: var(--text); display: grid; place-items: center; padding: 24px; }
-        main { width: min(100%, 480px); background: #fff; border-radius: 18px; padding: 36px; box-shadow: 0 18px 50px rgba(15, 23, 42, .12); }
+        main { width: min(100%, 520px); background: #fff; border-radius: 18px; padding: 36px; box-shadow: 0 18px 50px rgba(15, 23, 42, .12); }
         h1 { margin: 0 0 8px; font-size: 28px; }
         .lead { margin: 0 0 28px; color: var(--muted); line-height: 1.6; }
         label { display: block; margin: 16px 0 7px; font-weight: 600; font-size: 14px; }
         input, select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 9px; font: inherit; }
         input:focus, select:focus { outline: 3px solid rgba(37, 99, 235, .15); border-color: var(--primary); }
         .hint { color: var(--muted); font-size: 12px; margin: 7px 0 0; line-height: 1.5; }
-        button { width: 100%; border: 0; border-radius: 9px; background: var(--primary); color: #fff; padding: 13px; margin-top: 26px; font: inherit; font-weight: 700; cursor: pointer; }
+        .field-row { display: grid; grid-template-columns: minmax(0, 1fr) 132px; gap: 10px; align-items: stretch; }
+        button { border: 0; border-radius: 9px; background: var(--primary); color: #fff; padding: 13px; font: inherit; font-weight: 700; cursor: pointer; }
         button:disabled { opacity: .65; cursor: wait; }
+        .send-code { margin: 0; padding: 0 10px; font-size: 14px; }
+        .submit { width: 100%; margin-top: 26px; }
+        .message { min-height: 20px; margin: 14px 0 0; font-size: 13px; color: var(--muted); }
+        .message.error { color: var(--danger); }
         .footer { text-align: center; margin: 22px 0 0; color: var(--muted); font-size: 14px; }
         a { color: var(--primary); text-decoration: none; font-weight: 600; }
+        @media (max-width: 520px) {
+            main { padding: 28px; }
+            .field-row { grid-template-columns: 1fr; }
+            .send-code { min-height: 44px; }
+        }
     </style>
 </head>
 <body>
     <main>
         <h1>创建知微智学账号</h1>
-        <p class="lead">填写邮箱或手机号至少一项即可注册。用户名可不填，系统会使用你的邮箱或手机号作为登录账号。</p>
+        <p class="lead">填写邮箱并完成验证码校验。用户名可不填，系统会使用邮箱作为登录账号。</p>
         <form id="register-form">
             <label for="username">用户名（可选）</label>
             <input id="username" name="username" maxlength="254" placeholder="例如 teacher_wu">
 
             <label for="email">邮箱</label>
-            <input id="email" name="email" type="email" placeholder="name@example.com">
+            <div class="field-row">
+                <input id="email" name="email" type="email" placeholder="name@example.com">
+                <button class="send-code" type="button" data-channel="email">发送邮箱验证码</button>
+            </div>
+            <label for="emailCode">邮箱验证码</label>
+            <input id="emailCode" name="emailCode" inputmode="numeric" maxlength="6" placeholder="6 位验证码">
 
-            <label for="phone">手机号</label>
-            <input id="phone" name="phone" inputmode="tel" placeholder="例如 13800138000">
-            <p class="hint">邮箱和手机号至少填写一项；当前版本不发送验证码。</p>
+            <p class="hint">短信验证码需要腾讯云资质审核，当前演示版先开放邮箱验证码注册。</p>
 
             <label for="password">密码</label>
             <input id="password" name="password" type="password" minlength="6" required placeholder="至少 6 位">
@@ -45,24 +58,98 @@
                 <option value="ROLE_TEACHER">教师</option>
             </select>
 
-            <button type="submit">注册并返回登录</button>
+            <p id="message" class="message" aria-live="polite"></p>
+            <button class="submit" type="submit">注册并返回登录</button>
         </form>
         <p class="footer">已有账号？<a href="login.html">去登录</a></p>
     </main>
     <script>
         const form = document.getElementById('register-form');
+        const message = document.getElementById('message');
         const apiBase = window.location.protocol === 'file:' ? 'http://localhost:8081' : '';
+        const cooldownTimers = new Map();
+
+        function showMessage(text, isError = false) {
+            message.textContent = text;
+            message.classList.toggle('error', isError);
+        }
+
+        async function parseResponsePayload(response) {
+            const text = await response.text();
+            if (!text) {
+                return {};
+            }
+            try {
+                return JSON.parse(text);
+            } catch (error) {
+                return { message: text };
+            }
+        }
+
+        function startCooldown(button, seconds = 60) {
+            let remaining = seconds;
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = `${remaining}s 后重试`;
+            clearInterval(cooldownTimers.get(button));
+            const timer = setInterval(() => {
+                remaining -= 1;
+                if (remaining <= 0) {
+                    clearInterval(timer);
+                    cooldownTimers.delete(button);
+                    button.disabled = false;
+                    button.textContent = originalText;
+                    return;
+                }
+                button.textContent = `${remaining}s 后重试`;
+            }, 1000);
+            cooldownTimers.set(button, timer);
+        }
+
+        async function sendCode(channel, target, button) {
+            if (!target) {
+                showMessage('请先填写邮箱。', true);
+                return;
+            }
+            button.disabled = true;
+            try {
+                const response = await fetch(`${apiBase}/api/v1/auth/verification-code/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ channel, target })
+                });
+                const payload = await parseResponsePayload(response);
+                if (!response.ok) {
+                    throw new Error(payload.message || '验证码发送失败。');
+                }
+                showMessage('验证码已发送，请查收。');
+                startCooldown(button, 60);
+            } catch (error) {
+                button.disabled = false;
+                showMessage(error.message || '验证码发送失败，请稍后重试。', true);
+            }
+        }
+
+        document.querySelectorAll('.send-code').forEach((button) => {
+            button.addEventListener('click', () => {
+                const channel = button.dataset.channel;
+                sendCode('email', form.email.value.trim(), button);
+            });
+        });
 
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
             const email = form.email.value.trim();
-            const phone = form.phone.value.trim();
-            if (!email && !phone) {
-                alert('请至少填写邮箱或手机号。');
+            if (!email) {
+                showMessage('请填写邮箱。', true);
+                return;
+            }
+            if (email && !form.emailCode.value.trim()) {
+                showMessage('请填写邮箱验证码。', true);
                 return;
             }
 
-            const button = form.querySelector('button');
+            const button = form.querySelector('.submit');
             button.disabled = true;
             button.textContent = '注册中...';
             try {
@@ -72,19 +159,21 @@
                     body: JSON.stringify({
                         username: form.username.value.trim() || null,
                         email: email || null,
-                        phone: phone || null,
+                        phone: null,
+                        emailCode: form.emailCode.value.trim() || null,
+                        phoneCode: null,
                         password: form.password.value,
                         role: form.role.value
                     })
                 });
-                const payload = await response.json().catch(async () => ({ message: await response.text() }));
+                const payload = await parseResponsePayload(response);
                 if (!response.ok) {
                     throw new Error(payload.message || payload || '注册失败，请检查填写内容。');
                 }
-                const identifier = encodeURIComponent(payload.username || email || phone);
+                const identifier = encodeURIComponent(payload.username || email);
                 window.location.href = `login.html?identifier=${identifier}`;
             } catch (error) {
-                alert(error.message || '注册失败，请稍后重试。');
+                showMessage(error.message || '注册失败，请稍后重试。', true);
             } finally {
                 button.disabled = false;
                 button.textContent = '注册并返回登录';

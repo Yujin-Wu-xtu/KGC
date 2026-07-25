@@ -10,6 +10,8 @@ public class RegisterRequest {
     private String username;
     private String email;
     private String phone;
+    private String emailCode;
+    private String phoneCode;
     private String password;
     private UserRole role;
 
@@ -36,6 +38,22 @@ public class RegisterRequest {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getEmailCode() {
+        return emailCode;
+    }
+
+    public void setEmailCode(String emailCode) {
+        this.emailCode = emailCode;
+    }
+
+    public String getPhoneCode() {
+        return phoneCode;
+    }
+
+    public void setPhoneCode(String phoneCode) {
+        this.phoneCode = phoneCode;
     }
 
     public String getPassword() {

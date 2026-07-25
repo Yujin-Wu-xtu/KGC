@@ -24,11 +24,20 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final VerificationCodeService verificationCodeService;
 
     @Autowired
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+            VerificationCodeService verificationCodeService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.verificationCodeService = verificationCodeService;
+    }
+
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.verificationCodeService = null;
     }
 
     /**
@@ -64,6 +73,8 @@ public class UserService {
             throw new IllegalArgumentException("Password must contain at least 6 characters.");
         }
 
+        verifyRegistrationCodesIfConfigured(request, email, phone);
+
         if (userRepository.findByUsername(username).isPresent()) {
             throw new IllegalArgumentException("This username is already in use.");
         }
@@ -81,6 +92,26 @@ public class UserService {
         newUser.setPassword(passwordEncoder.encode(password));
         newUser.setRole(request.getRole() == null ? UserRole.ROLE_STUDENT : request.getRole());
         return userRepository.save(newUser);
+    }
+
+    private void verifyRegistrationCodesIfConfigured(RegisterRequest request, String email, String phone) {
+        if (verificationCodeService == null) {
+            return;
+        }
+        if (email != null) {
+            String emailCode = normalizeIdentifier(request.getEmailCode());
+            if (emailCode == null) {
+                throw new IllegalArgumentException("Please provide the email verification code.");
+            }
+            verificationCodeService.verify("email", email, emailCode);
+        }
+        if (phone != null) {
+            String phoneCode = normalizeIdentifier(request.getPhoneCode());
+            if (phoneCode == null) {
+                throw new IllegalArgumentException("Please provide the mobile verification code.");
+            }
+            verificationCodeService.verify("sms", phone, phoneCode);
+        }
     }
 
     public String login(String identifier, String password) {

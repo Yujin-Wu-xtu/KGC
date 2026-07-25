@@ -4,7 +4,7 @@
 >
 > Purpose: This document is the shared development baseline for the project. Future development conversations should start from this file and update it when scope, status, or decisions change.
 >
-> Last updated: 2026-07-24
+> Last updated: 2026-07-25
 
 ## 1. Current Objective
 
@@ -49,6 +49,8 @@ The target users are teachers, who build and manage courses and graphs, and stud
 - MySQL via Spring Data JPA for users and uploaded-file metadata.
 - Neo4j Aura via Spring Data Neo4j for graph nodes and relationships.
 - JWT registration and login infrastructure is present.
+- Real email-verification registration is working locally: verification codes are persisted in MySQL with TTL, cooldown, and daily limit controls; codes are sent through Spring Mail SMTP; registration validates `emailCode` before creating a user.
+- Tencent Cloud SMS sender infrastructure exists behind configuration, but SMS is disabled for the current live flow because Tencent SMS qualification review is still pending.
 - File upload service supports files up to 50 MB and stores physical files locally plus metadata in MySQL.
 - Text extraction is implemented for PDF, Word (`.doc` / `.docx`), and PowerPoint (`.ppt` / `.pptx`).
 - DeepSeek integration requests structured JSON containing `nodes` and `relationships`.
@@ -62,6 +64,7 @@ The target users are teachers, who build and manage courses and graphs, and stud
 - The graph-generation page can upload a file, call the parsing API, render an ECharts tree graph, and preserve the rendered result in browser `localStorage`.
 - Student-oriented learning pages and an AI tutor demonstration exist.
 - The current graph renderer uses ECharts tree layout with orthogonal polyline edges and expand/collapse interaction.
+- Static `register.html` and `login.html` now call the real authentication APIs. Registration currently exposes the email-verification flow only; SMS verification UI is intentionally hidden until SMS provider approval is available.
 
 ### 3.3 What is still a demonstration or incomplete
 
@@ -213,7 +216,21 @@ This section records the verified local development environment as of 2026-07-21
 
 For a future server deployment, set a non-empty database password and provide it through the server environment rather than changing the source file.
 
-### 7.2 Version Control and Collaboration Baseline
+### 7.2 Current Local Email Verification Baseline
+
+This section records the verified local email-verification state as of 2026-07-25. It is a development-only baseline.
+
+| Item | Current verified value |
+| --- | --- |
+| Live verification channel | Email only |
+| Mail provider used for local verification | QQ SMTP |
+| SMTP runtime configuration | Local runtime may use environment variables (`KGC_MAIL_*`) or the ignored root-level `application-local.properties` imported by `spring.config.import=optional:file:./application-local.properties`. |
+| Secret-handling rule | SMTP authorization code must stay in local ignored config or environment variables. Do not commit it. |
+| Test profile | `src/test/resources/application-test.properties` provides mock mail properties for Spring tests. |
+| Verified result | A real email verification code was sent, and registration/login succeeded locally through the browser. |
+| Known account rule | One email address currently maps to one account. Trying to register the same email for a second role should surface a clear “email already registered” style error rather than a frontend response-stream exception. |
+
+### 7.3 Version Control and Collaboration Baseline
 
 This section records the verified code-management baseline as of 2026-07-24.
 
@@ -244,14 +261,16 @@ Future collaboration should use Git as the default checkpoint mechanism. Keep `m
 6. Keep the system demoable at all times. Avoid large refactors that temporarily break the existing presentation unless they are necessary for the active milestone.
 7. Use Git commits as project checkpoints. Before substantial edits, inspect `git status`; after a coherent change, verify behavior and commit with a clear message.
 8. Continue using HTTPS plus `gh` authentication for GitHub operations unless the Windows SSH key path issue is deliberately reconfigured later.
+9. Future conversations, design notes, and implementation plans should default to Chinese unless an English term is needed for code, APIs, or citations.
 
 ## 9. Immediate Next Step
 
-The recommended next milestone is **Phase 0 followed by Phase 1**:
+The recommended next milestone is **finish Phase 0 cleanup, then start Phase 1 course/resource persistence**:
 
-1. Make runtime configuration deployable and rotate exposed credentials.
-2. Add persistent course management and connect the existing course/resource pages to the backend.
-3. Then rebuild graph generation around the course-scoped model.
+1. Finish Phase 0 configuration cleanup: confirm `application-local.properties` usage, document local/server startup, and rotate any credentials that may have appeared in historical local files before deployment.
+2. Start Phase 1: add persistent Course entity/repository/service/API and connect course listing/detail pages to backend data instead of `localStorage`.
+3. Attach uploaded ResourceFile records to real courses, then make graph generation course-scoped.
+4. Keep the verified email-registration flow stable while course/resource work proceeds.
 
 This ordering prevents later graph and student-learning work from being built on temporary `localStorage` state.
 
@@ -260,7 +279,8 @@ This ordering prevents later graph and student-learning work from being built on
 | Date | Change |
 | --- | --- |
 | 2026-07-21 | Created the shared project baseline from the original proposal, backend progress document, and current source review. |
-| 2026-07-21 | Added email and mobile-number registration plus username/email/mobile login. Added the deployable `register.html` page and replaced the login page's mock redirect with real authentication API calls. Verification-code delivery remains deferred because no email/SMS provider has been selected. |
+| 2026-07-21 | Added email and mobile-number registration plus username/email/mobile login. Added the deployable `register.html` page and replaced the login page's mock redirect with real authentication API calls. Verification-code delivery was deferred at that time because no email/SMS provider had been selected. |
 | 2026-07-21 | Configured the local-default `kgc_db` datasource to read URL/username/password from `KGC_DB_URL`/`KGC_DB_USERNAME`/`KGC_DB_PASSWORD` with local defaults, and enabled Hibernate `ddl-auto=update` automatic schema synchronization. |
 | 2026-07-21 | Verified the local XAMPP MariaDB integration: the backend started against `kgc_db`, Hibernate initialized the schema, and registration of the `test1` user succeeded. Documented the current passwordless local development database baseline. |
 | 2026-07-24 | Established the Git/GitHub collaboration baseline: initialized the local Git repository, set `main` as the primary branch, committed 91 key files as baseline commit `9e953f4`, installed and authenticated GitHub CLI, created and pushed to `https://github.com/Yujin-Wu-xtu/KGC`, corrected the temporary username typo from `Yvjin` to `Yujin`, and selected HTTPS plus `gh` credential helper as the stable push strategy. |
+| 2026-07-25 | Added and verified the real email registration verification-code flow: MySQL-backed verification-code records with TTL, cooldown, and daily limit; Spring Mail SMTP sender; Tencent Cloud SMS sender scaffold kept disabled; `/api/v1/auth/verification-code/send` and `/verify` APIs; email-only registration UI; local `application-local.properties` support for ignored SMTP config; JSON auth error responses; and frontend response parsing that no longer reads a fetch body twice. A real browser registration/login with email code was manually verified locally. |

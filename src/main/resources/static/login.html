@@ -372,6 +372,18 @@
             registerLink.href = 'register.html';
             registerLink.textContent = '立即注册';
 
+            async function parseResponsePayload(response) {
+                const text = await response.text();
+                if (!text) {
+                    return {};
+                }
+                try {
+                    return JSON.parse(text);
+                } catch (error) {
+                    return { message: text };
+                }
+            }
+
             window.switchRole = function (role) {
                 const selector = document.getElementById('roleSelector');
                 document.getElementById('btn-teacher').classList.toggle('active', role === 'teacher');
@@ -399,7 +411,7 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ identifier, password })
                     });
-                    const payload = await response.json().catch(async () => ({ message: await response.text() }));
+                    const payload = await parseResponsePayload(response);
                     if (!response.ok) {
                         throw new Error(payload.message || payload || '登录失败，请检查账号和密码。');
                     }
