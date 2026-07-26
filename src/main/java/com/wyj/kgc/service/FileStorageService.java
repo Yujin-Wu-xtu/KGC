@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 
 /**
  * 业务逻辑层 (Service) - 负责处理文件存储
@@ -87,5 +88,12 @@ public class FileStorageService {
         } catch (IOException ex) {
             throw new RuntimeException("无法存储文件 " + originalFileName + ". 请重试!", ex);
         }
+    }
+
+    public List<ResourceFile> listFilesByCourse(Long courseId) {
+        if (courseId == null) {
+            return resourceFileRepository.findAllByOrderByCreatedAtDesc();
+        }
+        return resourceFileRepository.findByCourseIdOrderByCreatedAtDesc(courseId);
     }
 }

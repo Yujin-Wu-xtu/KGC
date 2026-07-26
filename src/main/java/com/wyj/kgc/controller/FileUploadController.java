@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 /**
  * 负责处理所有文件相关的API请求
  * 对应您申报书中的 "图6 生成页"
@@ -30,6 +32,12 @@ public class FileUploadController {
 
     @Autowired
     private UserService userService;
+
+    @GetMapping
+    public ResponseEntity<List<ResourceFile>> listFiles(
+            @RequestParam(value = "courseId", required = false) Long courseId) {
+        return ResponseEntity.ok(fileStorageService.listFilesByCourse(courseId));
+    }
 
     @PostMapping("/upload")
     public ResponseEntity<ResourceFile> uploadFile(

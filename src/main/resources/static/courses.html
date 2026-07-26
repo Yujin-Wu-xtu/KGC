@@ -391,14 +391,34 @@
             { id: 'course_3', title: '线性代数', tag: '平台基础课', desc: '数学与人工智能的基石。图谱涵盖了矩阵运算、向量空间、行列式及特征值分解等核心理论及应用链路。', resourceCount: 5, nodeCount: 305, coverClass: 'cover-3', isNew: false }
         ];
 
-        document.addEventListener('DOMContentLoaded', () => {
-            let savedCourses = localStorage.getItem('kgc_courses');
-            if (!savedCourses) {
-                localStorage.setItem('kgc_courses', JSON.stringify(defaultCourses));
-                savedCourses = JSON.stringify(defaultCourses);
+        const COURSE_API = '/api/v1/courses';
+
+        document.addEventListener('DOMContentLoaded', loadCourses);
+
+        async function loadCourses() {
+            try {
+                const response = await fetch(COURSE_API);
+                if (!response.ok) throw new Error('课程列表加载失败');
+                const backendCourses = await response.json();
+                renderCourses(backendCourses.length > 0 ? backendCourses.map(toCourseCard) : defaultCourses);
+            } catch (error) {
+                console.warn('[KGC] course API unavailable, using demo courses.', error);
+                renderCourses(defaultCourses);
             }
-            renderCourses(JSON.parse(savedCourses));
-        });
+        }
+
+        function toCourseCard(course) {
+            return {
+                id: course.id,
+                title: course.name,
+                tag: '后端课程',
+                desc: course.description || '暂无课程简介，上传资料后可继续生成课程知识图谱。',
+                resourceCount: course.resourceCount || 0,
+                nodeCount: course.nodeCount || 0,
+                coverClass: 'cover-new',
+                isNew: false
+            };
+        }
 
         // 2. 渲染课程卡片到页面
         function renderCourses(courses) {
@@ -441,37 +461,37 @@
 
         function closeModal() { document.getElementById('newCourseModal').classList.remove('show'); }
 
-        function submitCourse() {
+        async function submitCourse() {
             const nameInput = document.getElementById('inputCourseName').value.trim();
-            const tagInput = document.getElementById('inputCourseTag').value;
             const descInput = document.getElementById('inputCourseDesc').value.trim() || "该课程暂无简介，大模型将根据后续上传的课件自动解析知识体系。";
             
-            if (!nameInput) { alert("请输入课程名称！"); return; }
+            if (!nameInput) { alert("请输入课程名称。"); return; }
 
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.classList.add('btn-loading'); 
 
-            setTimeout(() => {
-                submitBtn.classList.remove('btn-loading');
+            try {
+                const response = await fetch(COURSE_API, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: nameInput,
+                        description: descInput
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json().catch(() => ({}));
+                    throw new Error(errorBody.message || '课程创建失败');
+                }
+
                 closeModal();
-
-                const newCourse = {
-                    id: 'course_' + Date.now(), // 生成唯一ID
-                    title: nameInput,
-                    tag: tagInput,
-                    desc: descInput,
-                    resourceCount: 0,
-                    nodeCount: 0,
-                    coverClass: 'cover-new',
-                    isNew: true
-                };
-
-                let courses = JSON.parse(localStorage.getItem('kgc_courses')) || [];
-                courses.push(newCourse);
-                localStorage.setItem('kgc_courses', JSON.stringify(courses));
-                renderCourses(courses);
-
-            }, 800); 
+                await loadCourses();
+            } catch (error) {
+                alert(error.message || '课程创建失败，请稍后重试。');
+            } finally {
+                submitBtn.classList.remove('btn-loading');
+            }
         }
     </script>
 </body>

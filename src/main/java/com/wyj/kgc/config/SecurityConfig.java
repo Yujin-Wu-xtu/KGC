@@ -87,6 +87,7 @@ public class SecurityConfig {
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/fonts/**", "/assets/**", "/效果图/**").permitAll()
                         // 放行 "/api/v1/auth/**" (注册/登录)
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/courses/**").permitAll()
                         // 放行所有文件接口 (包括上传和解析)
                         .requestMatchers("/api/v1/files/**").permitAll()
                         // 放行错误页面

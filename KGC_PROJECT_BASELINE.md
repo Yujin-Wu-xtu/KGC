@@ -25,6 +25,13 @@ One operational exception remains: API keys, database passwords, and other crede
 
 KGC is an education-oriented platform that converts course materials into an editable knowledge graph, then uses that graph to organize learning resources and guide student learning.
 
+The system has two layers of value:
+
+1. **Standard workflow functions**: registration, course/resource management, upload, persistence, publishing, and demonstration-oriented student browsing. These functions support the project being usable, deployable, and easy to present.
+2. **Core technical functions**: after the LLM extracts structured knowledge from teaching materials, the backend must generate, merge, arrange, and maintain the knowledge graph itself. This includes graph construction quality, node/relationship organization, source traceability, and rendering stability. Current visible issues such as node overlap, layout crowding, and graph display bugs belong to this core technical layer.
+
+The long-term technical direction is to study and borrow from open-source knowledge-graph generation and graph-layout toolchains where useful, then combine them with this project's course-scoped data model and LLM extraction pipeline to improve graph generation quality and display stability.
+
 The intended core flow is:
 
 ```mermaid
@@ -65,16 +72,19 @@ The target users are teachers, who build and manage courses and graphs, and stud
 - Student-oriented learning pages and an AI tutor demonstration exist.
 - The current graph renderer uses ECharts tree layout with orthogonal polyline edges and expand/collapse interaction.
 - Static `register.html` and `login.html` now call the real authentication APIs. Registration currently exposes the email-verification flow only; SMS verification UI is intentionally hidden until SMS provider approval is available.
+- Course persistence has started: the backend now has a real `Course` entity, repository, service, and `/api/v1/courses` CRUD-style API. The teacher course page now loads and creates courses through the backend API first, with default demonstration courses only as a fallback when the API is unavailable or empty.
+- Resource listing has a backend course filter path through `GET /api/v1/files?courseId={id}`, while the resource-management page still needs to be connected fully to the backend upload/listing flow.
 
 ### 3.3 What is still a demonstration or incomplete
 
 - Courses, resources, learning progress, and most cross-page state are primarily static data or `localStorage`; they are not yet a complete backend business system.
-- There is no actual Course entity or teacher-to-course-to-resource ownership model in the backend.
+- Course persistence exists, but the teacher-to-course-to-resource ownership model is still lightweight and not yet a complete permission system.
 - Graph retrieval is global rather than scoped cleanly to a course or a source file.
 - The current graph DTO uses node database IDs while links use node names, which needs normalization before production-style rendering.
 - Repeated node names can be merged across unrelated source files because persistence looks up nodes by name globally.
 - Graph editing is a frontend expectation from the proposal, but persistent node and relationship CRUD is not yet implemented.
 - Parsing is synchronous and sends the complete extracted text to the LLM. Large documents can exceed model input limits and need chunking plus result merging.
+- Graph visualization still has practical defects such as overlap, crowding, and layout instability, so the rendering and graph-arrangement layer still needs targeted improvement.
 - Excel, scanned-document OCR, image understanding, audio transcription, video processing, conflict detection, reinforcement feedback, and advanced inference are not currently implemented.
 - The source inspected does not contain the progress-document's "ghost anchor" layout algorithm. The current implementation should be described truthfully as ECharts tree rendering and interaction until that algorithm is implemented.
 
@@ -271,6 +281,7 @@ The recommended next milestone is **finish Phase 0 cleanup, then start Phase 1 c
 2. Start Phase 1: add persistent Course entity/repository/service/API and connect course listing/detail pages to backend data instead of `localStorage`.
 3. Attach uploaded ResourceFile records to real courses, then make graph generation course-scoped.
 4. Keep the verified email-registration flow stable while course/resource work proceeds.
+5. In parallel with standard feature work, keep tracking graph-generation and graph-layout improvements as the project's core technical line, especially issues related to overlap, node arrangement, graph merging, and display stability.
 
 This ordering prevents later graph and student-learning work from being built on temporary `localStorage` state.
 
@@ -284,3 +295,4 @@ This ordering prevents later graph and student-learning work from being built on
 | 2026-07-21 | Verified the local XAMPP MariaDB integration: the backend started against `kgc_db`, Hibernate initialized the schema, and registration of the `test1` user succeeded. Documented the current passwordless local development database baseline. |
 | 2026-07-24 | Established the Git/GitHub collaboration baseline: initialized the local Git repository, set `main` as the primary branch, committed 91 key files as baseline commit `9e953f4`, installed and authenticated GitHub CLI, created and pushed to `https://github.com/Yujin-Wu-xtu/KGC`, corrected the temporary username typo from `Yvjin` to `Yujin`, and selected HTTPS plus `gh` credential helper as the stable push strategy. |
 | 2026-07-25 | Added and verified the real email registration verification-code flow: MySQL-backed verification-code records with TTL, cooldown, and daily limit; Spring Mail SMTP sender; Tencent Cloud SMS sender scaffold kept disabled; `/api/v1/auth/verification-code/send` and `/verify` APIs; email-only registration UI; local `application-local.properties` support for ignored SMTP config; JSON auth error responses; and frontend response parsing that no longer reads a fetch body twice. A real browser registration/login with email code was manually verified locally. |
+| 2026-07-26 | Clarified that the project's core technical value is LLM-based structured knowledge extraction followed by backend knowledge-graph generation, merging, arrangement, and stable visualization; standard functions are supporting workflow capabilities. Added backend Course persistence, `/api/v1/courses` APIs, course-filtered resource listing, tests for the new contracts, and connected the teacher course page to the backend course API with a demonstration fallback. |
