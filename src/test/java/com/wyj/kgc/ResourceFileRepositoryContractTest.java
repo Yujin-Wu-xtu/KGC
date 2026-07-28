@@ -13,7 +13,7 @@ class ResourceFileRepositoryContractTest {
     @Test
     void repositoryCanQueryResourcesByCourseId() {
         assertDoesNotThrow(() -> {
-            var method = ResourceFileRepository.class.getMethod("findByCourseIdOrderByCreatedAtDesc", Long.class);
+            var method = ResourceFileRepository.class.getMethod("findByCourse_IdOrderByCreatedAtDesc", Long.class);
             assertEquals(List.class, method.getReturnType());
         });
     }

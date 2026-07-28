@@ -14,9 +14,19 @@ import java.util.List;
 public interface KnowledgeNodeRepository extends Neo4jRepository<KnowledgeNode, Long> {
 
     /**
-     * 根据节点名称查找节点
+     * 根据节点名称查找节点（全局，保留向后兼容）
      */
     KnowledgeNode findByName(String name);
+
+    /**
+     * 根据节点名称和课程 ID 查找节点（课程内去重）
+     */
+    KnowledgeNode findByNameAndCourseId(String name, Long courseId);
+
+    /**
+     * 根据课程 ID 查找所有归属于该课程的节点
+     */
+    List<KnowledgeNode> findByCourseId(Long courseId);
 
     /**
      * 根据源文件 ID 查找所有归属于该文件的节点 (溯源功能)

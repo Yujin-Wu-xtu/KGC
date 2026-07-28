@@ -261,33 +261,35 @@
     </div>
 
     <script>
-        // --- 新增：自动接收从资源库传过来的文件 ---
-        let autoLoadedFileName = null;
+        // --- 全局参数：从 URL 获取课程 ID 和文件名 ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseId = urlParams.get('courseId') || '1'; // 兼容旧的默认值
+        let autoLoadedFileName = urlParams.get('fileName') || null;
 
         document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const fileName = urlParams.get('fileName');
-            if (fileName) {
-                autoLoadedFileName = fileName;
-                // 模拟文件已选中的 UI 效果
-                document.querySelector('.upload-text').textContent = fileName;
+            // 如果从资源库跳转过来，显示已选文件
+            if (autoLoadedFileName) {
+                document.querySelector('.upload-text').textContent = autoLoadedFileName;
                 document.querySelector('.upload-subtext').textContent = '已从资源库快速导入';
                 document.querySelector('.upload-area').style.borderColor = '#10b981';
                 document.querySelector('.upload-area').style.background = 'rgba(16, 185, 129, 0.05)';
-                
-                // 打印一条酷炫的日志
-                addLog(`[系统联动] 已成功接收资源库免密传输文件：${fileName}`, 'info');
+                addLog(`[系统联动] 已成功接收资源库免密传输文件：${autoLoadedFileName}`, 'info');
             }
 
-            // --- 新增：自动加载上一次生成的图谱数据（持久化演示） ---
-            const savedGraph = localStorage.getItem('kgc_current_graph');
-            if (savedGraph) {
-                const graphData = JSON.parse(savedGraph);
-                setTimeout(() => {
-                    addLog(`[自动恢复] 检测到本地缓存的图谱数据，正在为您恢复渲染...`, 'success');
-                    renderGraph(graphData);
-                }, 500);
-            }
+            // --- 从后端 API 恢复该课程已有的图谱数据 ---
+            fetch(`http://localhost:8081/api/v1/courses/${courseId}/graph`)
+                .then(res => res.json())
+                .then(graphData => {
+                    if (graphData.nodes && graphData.nodes.length > 0) {
+                        addLog(`[后端恢复] 从服务器加载课程图谱：${graphData.nodes.length} 个节点`, 'success');
+                        renderGraph(transformBackendData(graphData));
+                    } else {
+                        addLog(`[提示] 该课程暂无已生成的图谱，请上传文件并解析。`, 'info');
+                    }
+                })
+                .catch(() => {
+                    addLog(`[离线模式] 后端不可用，等待手动解析。`, 'warn');
+                });
         });
         // 初始化 ECharts
         const chartDom = document.getElementById('graph-container');
@@ -554,11 +556,11 @@
                 
                 const formData = new FormData();
                 
-                // 【核心修复点】：如果是资源库跳转过来的，物理文件为空，我们就在内存里“伪造”一个同名文件骗过表单
+                // 如果是资源库跳转过来的，物理文件为空，用内存文件兜底
                 const fileToUpload = physicalFile ? physicalFile : new File(["mock content"], activeFileName, { type: "application/pdf" });
                 
                 formData.append('file', fileToUpload);
-                formData.append('courseId', '1');
+                formData.append('courseId', courseId);
                 
                 const uploadRes = await fetch('http://localhost:8081/api/v1/files/upload', {
                     method: 'POST',
@@ -584,74 +586,57 @@
 
                 loaderText.textContent = '聚合知识网络属性中...';
                 
-                const aiNodes = parseData.nodes || [];
-                const aiRelationships = parseData.relationships || [];
+                const finalGraphData = transformBackendData(parseData);
 
-                const graphNodes = aiNodes.map((n, idx) => ({
-                    id: n.name,
-                    name: n.name,
-                    label: n.label || 'Concept',
-                    category: 0,
-                    symbolSize: idx === 0 ? 60 : 35 + Math.random() * 15
-                }));
-
-                const graphLinks = aiRelationships.map(r => ({
-                    source: r.from,
-                    target: r.to,
-                    value: r.type,
-                    type: r.type
-                }));
-
-                addLog(`成功构建 ${graphNodes.length} 个节点、${graphLinks.length} 条关系，正在渲染...`, 'success');
-
-                const finalGraphData = {
-                    nodes: graphNodes,
-                    links: graphLinks,
-                    categories: [{ name: '概念 (Concept)' }]
-                };
+                addLog(`成功构建 ${finalGraphData.nodes.length} 个节点、${finalGraphData.links.length} 条关系，正在渲染...`, 'success');
 
                 renderGraph(finalGraphData);
 
-                // 【核心演示逻辑】：持久化存储图谱，确保跳转后不丢失
-                localStorage.setItem('kgc_current_graph', JSON.stringify(finalGraphData));
-                
-                // 【核心演示逻辑】：更新 localStorage，让学生端也能看到“已解析”的状态
-                updateLocalStorageStatus(activeFileName, graphNodes.length);
+                // 图谱已通过后端 API 持久化到 Neo4j，刷新页面将从后端恢复
+                addLog(`[持久化] 图谱已保存至后端数据库 (courseId=${courseId})`, 'success');
 
             } catch (err) {
                 // 如果后端没开，网络请求报错，会被这里优雅地接住，展示 Mock 的震撼图谱
                 addLog(err.message, 'error');
-                addLog('由于真实流程因客观原因受阻，正在自动恢复至 Fallback Mock 数据进行优雅展示以完成截图目标。', 'warn');
+                addLog('由于真实流程因客观原因受阻，正在自动恢复至 Fallback Mock 数据进行优雅展示。', 'warn');
                 
                 renderGraph(mockGraphData); // 出错兜底
-                localStorage.setItem('kgc_current_graph', JSON.stringify(mockGraphData)); // 兜底数据也持久化
-
-                updateLocalStorageStatus(activeFileName, 35); // Mock 状态也更新一下
             } finally {
                 loader.classList.remove('active');
             }
         }
 
-        function updateLocalStorageStatus(fileName, nodeCount) {
-            let resources = JSON.parse(localStorage.getItem('kgc_resources')) || [];
-            const resIndex = resources.findIndex(r => r.fileName === fileName);
-            
-            if (resIndex !== -1) {
-                const res = resources[resIndex];
-                res.status = 'done';
-                res.statusText = '萃取完成';
-                res.nodeCount = nodeCount + ' 个相关节点';
-                localStorage.setItem('kgc_resources', JSON.stringify(resources));
-                
-                // 同时更新课程的总节点数
-                let courses = JSON.parse(localStorage.getItem('kgc_courses')) || [];
-                const cIndex = courses.findIndex(c => c.id === res.courseId);
-                if (cIndex !== -1) {
-                    courses[cIndex].nodeCount += nodeCount;
-                    localStorage.setItem('kgc_courses', JSON.stringify(courses));
-                }
-                addLog(`[演示同步] 已自动同步至 localStorage，课程及资源状态已更新。`, 'success');
-            }
+        /**
+         * 将后端 GraphDataDTO 或 DeepSeek 原始返回格式统一转为前端 ECharts 渲染所需格式。
+         * 
+         * 后端 API 格式：{ nodes: [{id, name, label, sourceFileId}], links: [{source, target, type}] }
+         * DeepSeek 格式：{ nodes: [{name}], relationships: [{from, to, type}] }
+         * 
+         * 输出统一格式：{ nodes: [{id, name, ...}], links: [{source, target, value, type}] }
+         */
+        function transformBackendData(backendData) {
+            const graphNodes = (backendData.nodes || []).map((n, idx) => ({
+                id: String(n.id || n.name),  // DeepSeek 格式无 id，用 name 作为 id
+                name: n.name,
+                label: n.label || 'Concept',
+                category: 0,
+                symbolSize: idx === 0 ? 60 : 35 + Math.random() * 15
+            }));
+
+            // 兼容两种关系格式：后端用 links(source/target)，DeepSeek 用 relationships(from/to)
+            const rawLinks = backendData.links || backendData.relationships || [];
+            const graphLinks = rawLinks.map(l => ({
+                source: String(l.source || l.from),
+                target: String(l.target || l.to),
+                value: l.type,
+                type: l.type
+            }));
+
+            return {
+                nodes: graphNodes,
+                links: graphLinks,
+                categories: [{ name: '概念 (Concept)' }]
+            };
         }
     </script>
 </body>

@@ -58,6 +58,12 @@ public class KnowledgeGraphService {
             ResourceFile resourceFile = resourceFileRepository.findById(fileId)
                     .orElseThrow(() -> new RuntimeException("File not found: " + fileId));
 
+            // 获取课程 ID，用于课程级隔离
+            Long courseId = resourceFile.getCourseId();
+            if (courseId == null) {
+                throw new RuntimeException("File is not associated with a course: " + fileId);
+            }
+
             // 2. Extract Text from PDF or Word
             File file = new File(resourceFile.getFilePath());
             if (!file.exists()) {
@@ -93,7 +99,7 @@ public class KnowledgeGraphService {
             if (nodesArray != null && nodesArray.isArray()) {
                 for (JsonNode nodeJson : nodesArray) {
                     String name = nodeJson.has("name") ? nodeJson.get("name").asText() : "Unknown";
-                    KnowledgeNode node = new KnowledgeNode(name, "Concept", fileId);
+                    KnowledgeNode node = new KnowledgeNode(name, "Concept", fileId, courseId);
                     nodes.add(node);
                 }
             }
@@ -113,20 +119,24 @@ public class KnowledgeGraphService {
             // 5. 尝试持久化到 Neo4j（失败不阻断流程）
             try {
                 for (KnowledgeNode node : nodes) {
-                    KnowledgeNode existing = knowledgeNodeRepository.findByName(node.getName());
+                    // 课程内去重：同一课程内同名节点不重复创建
+                    KnowledgeNode existing = knowledgeNodeRepository.findByNameAndCourseId(node.getName(), courseId);
                     if (existing != null) {
                         node.setId(existing.getId());
                     }
                     knowledgeNodeRepository.save(node);
                 }
-                System.out.println("DEBUG: Nodes saved to Neo4j.");
+                System.out.println("DEBUG: Nodes saved to Neo4j with courseId=" + courseId);
 
                 for (KnowledgeRelation relation : relations) {
-                    String cypher = "MATCH (head:KnowledgeNode {name: $headName}), (tail:KnowledgeNode {name: $tailName}) "
+                    // 关系查询加上 courseId 约束，防止跨课程连线
+                    String cypher = "MATCH (head:KnowledgeNode {name: $headName, courseId: $courseId}), "
+                            + "(tail:KnowledgeNode {name: $tailName, courseId: $courseId}) "
                             + "MERGE (head)-[:" + relation.getType() + "]->(tail)";
                     neo4jClient.query(cypher)
                             .bind(relation.getStartNodeName()).to("headName")
                             .bind(relation.getEndNodeName()).to("tailName")
+                            .bind(courseId).to("courseId")
                             .run();
                 }
                 System.out.println("DEBUG: Relations saved to Neo4j.");
@@ -144,45 +154,70 @@ public class KnowledgeGraphService {
     }
 
     /**
-     * Retrieves the entire knowledge graph for visualization.
+     * Retrieves the entire knowledge graph for visualization (backward-compatible).
      * 
      * @return DTO containing all nodes and relationships.
      */
     public com.wyj.kgc.dto.graph.GraphDataDTO getFullGraphData() {
-        // Query all nodes
         List<KnowledgeNode> nodes = knowledgeNodeRepository.findAll();
+        return buildGraphDataDTO(nodes, null);
+    }
+
+    /**
+     * 按课程 ID 查询该课程的知识图谱。
+     * 节点和关系都限定在该课程范围内，不会跨课程。
+     *
+     * @param courseId 课程 ID
+     * @return 该课程的图谱数据
+     */
+    public com.wyj.kgc.dto.graph.GraphDataDTO getGraphDataByCourse(Long courseId) {
+        List<KnowledgeNode> nodes = knowledgeNodeRepository.findByCourseId(courseId);
+        return buildGraphDataDTO(nodes, courseId);
+    }
+
+    /**
+     * 内部方法：从节点列表构建 GraphDataDTO。
+     * 当 courseId 不为 null 时，关系查询限定在该课程内。
+     */
+    private com.wyj.kgc.dto.graph.GraphDataDTO buildGraphDataDTO(List<KnowledgeNode> nodes, Long courseId) {
         List<com.wyj.kgc.dto.graph.NodeDTO> nodeDTOs = new ArrayList<>();
         for (KnowledgeNode node : nodes) {
-            // Using ID as string for compatibility with various frontend libs
             nodeDTOs.add(new com.wyj.kgc.dto.graph.NodeDTO(
                     String.valueOf(node.getId()),
                     node.getName(),
-                    node.getLabel()));
+                    node.getLabel(),
+                    node.getSourceFileId()));
         }
 
-        // Query all relationships using raw Cypher
-        // We match any relationship [r] between any two nodes (n, m)
-        String cypher = "MATCH (n)-[r]->(m) RETURN n.name as source, m.name as target, type(r) as type";
+        // 构建关系查询 Cypher：统一使用 id(n) 和 id(m) 作为 source/target
+        String cypher;
+        if (courseId != null) {
+            cypher = "MATCH (n:KnowledgeNode {courseId: $courseId})-[r]->(m:KnowledgeNode {courseId: $courseId}) "
+                   + "RETURN id(n) as sourceId, id(m) as targetId, type(r) as type";
+        } else {
+            cypher = "MATCH (n)-[r]->(m) RETURN id(n) as sourceId, id(m) as targetId, type(r) as type";
+        }
 
         List<com.wyj.kgc.dto.graph.LinkDTO> linkDTOs = new ArrayList<>();
 
-        neo4jClient.query(cypher)
-                .fetch()
-                .all()
-                .forEach(record -> {
-                    String source = (String) record.get("source");
-                    String target = (String) record.get("target");
-                    String type = (String) record.get("type");
-
-                    // For visualization, we often need IDs, but if names are unique enough or
-                    // mapped, we can use names
-                    // However, to be robust with the NodeDTOs which use ID, we should probably
-                    // output IDs from the Cypher query
-                    // Let's stick to names for source/target in LinkDTO for now as requested by
-                    // user ("source（起点节点 ID 或名称）")
-                    // If frontend needs IDs, we can adjust the Cypher to return IDs.
-                    linkDTOs.add(new com.wyj.kgc.dto.graph.LinkDTO(source, target, type));
-                });
+        if (courseId != null) {
+            neo4jClient.query(cypher)
+                    .bind(courseId).to("courseId")
+                    .fetch().all().forEach(record -> {
+                        String source = String.valueOf(record.get("sourceId"));
+                        String target = String.valueOf(record.get("targetId"));
+                        String type = (String) record.get("type");
+                        linkDTOs.add(new com.wyj.kgc.dto.graph.LinkDTO(source, target, type));
+                    });
+        } else {
+            neo4jClient.query(cypher)
+                    .fetch().all().forEach(record -> {
+                        String source = String.valueOf(record.get("sourceId"));
+                        String target = String.valueOf(record.get("targetId"));
+                        String type = (String) record.get("type");
+                        linkDTOs.add(new com.wyj.kgc.dto.graph.LinkDTO(source, target, type));
+                    });
+        }
 
         return new com.wyj.kgc.dto.graph.GraphDataDTO(nodeDTOs, linkDTOs);
     }

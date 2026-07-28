@@ -6,9 +6,6 @@ import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * 知识图谱节点实体
  * Represents a node in the Neo4j graph.
@@ -41,16 +38,16 @@ public class KnowledgeNode {
     private Long sourceFileId;
 
     /**
-     * 动态属性
-     * 用于存储 AI 提取出来的其他非结构化属性
+     * 课程 ID
+     * 对应 MySQL 中 courses 表的主键 ID
+     * 用于将节点隔离到特定课程，防止跨课程的同名节点被误合并
      */
-    // 注意：SDN 对 Map 属性的支持需要配置，或者使用 @CompositeProperty
-    // 这里先作为普通属性存储，实际开发可能需要自定义 Converter
-    // private Map<String, Object> properties = new HashMap<>();
+    private Long courseId;
 
-    public KnowledgeNode(String name, String label, Long sourceFileId) {
+    public KnowledgeNode(String name, String label, Long sourceFileId, Long courseId) {
         this.name = name;
         this.label = label;
         this.sourceFileId = sourceFileId;
+        this.courseId = courseId;
     }
 }
