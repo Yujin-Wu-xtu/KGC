@@ -18,6 +18,9 @@ public class DeepSeekClient {
     @Value("${deepseek.api.key}")
     private String apiKey;
 
+    @Value("${deepseek.model:deepseek-v4-pro}")
+    private String deepSeekModel;
+
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
 
@@ -55,7 +58,7 @@ public class DeepSeekClient {
         // But using Jackson is safer for escaping.
         try {
             var requestBodyNode = objectMapper.createObjectNode();
-            requestBodyNode.put("model", "deepseek-chat");
+            requestBodyNode.put("model", deepSeekModel);
             requestBodyNode.put("temperature", 0.0); // Predictable output
 
             var messagesArray = requestBodyNode.putArray("messages");

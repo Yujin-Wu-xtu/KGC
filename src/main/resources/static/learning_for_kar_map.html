@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>知微智学 - 沉浸式知识导学视图</title>
+    <title>鐭ュ井鏅哄 - 娌夋蹈寮忕煡璇嗗瀛﹁鍥?/title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -139,12 +139,12 @@
 
         .inspector-content { padding: 24px; flex: 1; overflow-y: auto; }
         
-        /* 选项卡内容区容器 */
+        /* 閫夐」鍗″唴瀹瑰尯瀹瑰櫒 */
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 关联实体网络样式 */
+        /* 鍏宠仈瀹炰綋缃戠粶鏍峰紡 */
         .relation-chip {
             background: #334155; padding: 8px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #475569; transition: 0.2s;
         }
@@ -190,7 +190,7 @@
             80%, 100% { content: ''; }
         }
 
-        /* 随堂检测专项样式 */
+        /* 闅忓爞妫€娴嬩笓椤规牱寮?*/
         .quiz-card {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border);
@@ -224,7 +224,7 @@
             background: rgba(37, 99, 235, 0.15);
             color: #fff;
         }
-        /* 批改后的状态 */
+        /* 鎵规敼鍚庣殑鐘舵€?*/
         .quiz-option.correct {
             border-color: var(--success);
             background: rgba(16, 185, 129, 0.15);
@@ -244,7 +244,7 @@
             border-radius: 8px;
             font-size: 13px;
             line-height: 1.6;
-            display: none; /* 默认隐藏，提交后显示 */
+            display: none; /* 榛樿闅愯棌锛屾彁浜ゅ悗鏄剧ず */
         }
         .quiz-feedback.show-success {
             display: block;
@@ -275,7 +275,7 @@
         .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4); }
         .btn-submit:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
 
-        /* AI 生成按钮特效 */
+        /* AI 鐢熸垚鎸夐挳鐗规晥 */
         .btn-ai-gen {
             width: 100%;
             padding: 12px;
@@ -299,7 +299,7 @@
             box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
         }
         
-        /* 导出简报模态框样式 (A4 纸张风格) */
+        /* 瀵煎嚭绠€鎶ユā鎬佹鏍峰紡 (A4 绾稿紶椋庢牸) */
         .export-modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -374,16 +374,16 @@
 
     <header class="top-header">
         <div class="header-title">
-            <a href="learning.html" class="back-btn">← 返回学习主页</a>
+            <a href="learning.html" class="back-btn">鈫?杩斿洖瀛︿範涓婚〉</a>
             <span style="color: var(--text-muted);">|</span>
-            <span>《数字逻辑与数字电路》学生导学视图</span>
+            <span>銆婃暟瀛楅€昏緫涓庢暟瀛楃數璺€嬪鐢熷瀛﹁鍥?/span>
         </div>
         <div style="display: flex; align-items: center; gap: 20px;">
             <button class="btn-export-trigger" onclick="previewReport()">
-                <span>📄 导出结构化简报</span>
+                <span>馃搫 瀵煎嚭缁撴瀯鍖栫畝鎶?/span>
             </button>
             <div class="progress-indicator">
-                <span>当前掌握进度</span>
+                <span>褰撳墠鎺屾彙杩涘害</span>
                 <div class="progress-bar"><div class="progress-fill" id="top-progress"></div></div>
                 <span style="color: var(--accent);" id="top-progress-text">45%</span>
             </div>
@@ -393,114 +393,111 @@
     <div class="workspace">
         
         <div class="outline-pane">
-            <div class="outline-title">知识脉络导航</div>
+            <div class="outline-title">鐭ヨ瘑鑴夌粶瀵艰埅</div>
             
-            <div class="tree-parent">▸ 逻辑代数基础 (已掌握)</div>
+            <div class="tree-parent">鈻?閫昏緫浠ｆ暟鍩虹 (宸叉帉鎻?</div>
             
-            <div class="tree-parent" style="margin-top: 16px;">▾ 逻辑函数的化简方法</div>
-            <div class="tree-node">公式化简法</div>
-            <div class="tree-node active">卡诺图化简法</div>
-            <div class="tree-node">Q-M 算法化简</div>
+            <div class="tree-parent" style="margin-top: 16px;">鈻?閫昏緫鍑芥暟鐨勫寲绠€鏂规硶</div>
+            <div class="tree-node">鍏紡鍖栫畝娉?/div>
+            <div class="tree-node active">鍗¤鍥惧寲绠€娉?/div>
+            <div class="tree-node">Q-M 绠楁硶鍖栫畝</div>
             
-            <div class="tree-parent" style="margin-top: 16px;">▸ 组合逻辑电路的分析 (待解锁)</div>
-            <div class="tree-parent" style="margin-top: 16px;">▸ 常用组合逻辑器件 (待解锁)</div>
+            <div class="tree-parent" style="margin-top: 16px;">鈻?缁勫悎閫昏緫鐢佃矾鐨勫垎鏋?(寰呰В閿?</div>
+            <div class="tree-parent" style="margin-top: 16px;">鈻?甯哥敤缁勫悎閫昏緫鍣ㄤ欢 (寰呰В閿?</div>
         </div>
 
         <div class="content-pane">
-            <div class="breadcrumb">逻辑函数的化简方法 / 卡诺图化简法</div>
-            <h1 class="concept-title">卡诺图 (Karnaugh Map)</h1>
+            <div class="breadcrumb">閫昏緫鍑芥暟鐨勫寲绠€鏂规硶 / 鍗¤鍥惧寲绠€娉?/div>
+            <h1 class="concept-title">鍗¤鍥?(Karnaugh Map)</h1>
 
             <div class="video-player">
-                <video src="卡诺图讲解.mp4" controls style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover;"></video>
+                <video src="鍗¤鍥捐瑙?mp4" controls style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover;"></video>
             </div>
 
-            <h3 style="font-size: 16px; margin-bottom: 16px;">AI 抽取课件核心解析</h3>
+            <h3 style="font-size: 16px; margin-bottom: 16px;">AI 鎶藉彇璇句欢鏍稿績瑙ｆ瀽</h3>
             <div class="doc-snippet">
-                “卡诺图（Karnaugh Map）是一种用图形方式表示和化简逻辑函数的方法。它通过将逻辑变量的组合以方格矩阵的形式排列，使得逻辑相邻的最小项在几何位置上也相邻（即相邻方格仅有一位变量不同，遵循格雷码排序）。利用卡诺图，可以直观地将相邻的‘1’格画圈合并，从而消除多余的变量，得到最简的与或表达式。这种方法在变量数不超过6个时特别有效，能够有效避免代数化简法中由于经验不足导致的化简不彻底问题。”
-            </div>
+                鈥滃崱璇哄浘锛圞arnaugh Map锛夋槸涓€绉嶇敤鍥惧舰鏂瑰紡琛ㄧず鍜屽寲绠€閫昏緫鍑芥暟鐨勬柟娉曘€傚畠閫氳繃灏嗛€昏緫鍙橀噺鐨勭粍鍚堜互鏂规牸鐭╅樀鐨勫舰寮忔帓鍒楋紝浣垮緱閫昏緫鐩搁偦鐨勬渶灏忛」鍦ㄥ嚑浣曚綅缃笂涔熺浉閭伙紙鍗崇浉閭绘柟鏍间粎鏈変竴浣嶅彉閲忎笉鍚岋紝閬靛惊鏍奸浄鐮佹帓搴忥級銆傚埄鐢ㄥ崱璇哄浘锛屽彲浠ョ洿瑙傚湴灏嗙浉閭荤殑鈥?鈥欐牸鐢诲湀鍚堝苟锛屼粠鑰屾秷闄ゅ浣欑殑鍙橀噺锛屽緱鍒版渶绠€鐨勪笌鎴栬〃杈惧紡銆傝繖绉嶆柟娉曞湪鍙橀噺鏁颁笉瓒呰繃6涓椂鐗瑰埆鏈夋晥锛岃兘澶熸湁鏁堥伩鍏嶄唬鏁板寲绠€娉曚腑鐢变簬缁忛獙涓嶈冻瀵艰嚧鐨勫寲绠€涓嶅交搴曢棶棰樸€傗€?            </div>
             <div style="font-size: 13px; color: var(--text-muted); text-align: right;">
-                文本溯源：——《数字逻辑与数字电路(第6版).pdf》第 52 页
-            </div>
+                鏂囨湰婧簮锛氣€斺€斻€婃暟瀛楅€昏緫涓庢暟瀛楃數璺?绗?鐗?.pdf銆嬬 52 椤?            </div>
         </div>
 
         <div class="inspector-pane">
             <div class="inspector-tabs">
-                <div class="tab active" id="tab-network" onclick="switchTab('network')">关联实体网络</div>
-                <div class="tab" id="tab-quiz" onclick="switchTab('quiz')">随堂检测</div>
+                <div class="tab active" id="tab-network" onclick="switchTab('network')">鍏宠仈瀹炰綋缃戠粶</div>
+                <div class="tab" id="tab-quiz" onclick="switchTab('quiz')">闅忓爞妫€娴?/div>
             </div>
             
             <div class="inspector-content">
                 
                 <div id="content-network" class="tab-content active">
-                    <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">基于图谱计算的延伸阅读关联点：</div>
+                    <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">鍩轰簬鍥捐氨璁＄畻鐨勫欢浼搁槄璇诲叧鑱旂偣锛?/div>
                     
                     <div class="relation-chip">
                         <div>
-                            <div style="font-weight: 600; color: #f8fafc; margin-bottom: 4px;">最小项 (Minterm)</div>
-                            <div class="badge">组成基础要素</div>
+                            <div style="font-weight: 600; color: #f8fafc; margin-bottom: 4px;">鏈€灏忛」 (Minterm)</div>
+                            <div class="badge">缁勬垚鍩虹瑕佺礌</div>
                         </div>
-                        <span>→</span>
+                        <span>鈫?/span>
                     </div>
 
                     <div class="relation-chip">
                         <div>
-                            <div style="font-weight: 600; color: #f8fafc; margin-bottom: 4px;">无关项 (Don't Care)</div>
-                            <div class="badge">化简约束利用</div>
+                            <div style="font-weight: 600; color: #f8fafc; margin-bottom: 4px;">鏃犲叧椤?(Don't Care)</div>
+                            <div class="badge">鍖栫畝绾︽潫鍒╃敤</div>
                         </div>
-                        <span>→</span>
+                        <span>鈫?/span>
                     </div>
 
                     <div class="relation-chip">
                         <div>
-                            <div style="font-weight: 600; color: #f8fafc; margin-bottom: 4px;">格雷码 (Gray Code)</div>
-                            <div class="badge">底层排序逻辑</div>
+                            <div style="font-weight: 600; color: #f8fafc; margin-bottom: 4px;">鏍奸浄鐮?(Gray Code)</div>
+                            <div class="badge">搴曞眰鎺掑簭閫昏緫</div>
                         </div>
-                        <span>→</span>
+                        <span>鈫?/span>
                     </div>
 
                     <div class="ai-tutor">
-                        <div class="ai-title">✨ DeepSeek AI 助教</div>
+                        <div class="ai-title">鉁?DeepSeek AI 鍔╂暀</div>
                         <p id="ai-context-q" style="font-size: 13px; color: #cbd5e1; margin: 0 0 16px 0; line-height: 1.5;">
-                            关于“卡诺图”，如果遇到含有无关项（通常用 'd' 或 'x' 表示）的逻辑函数，我们在画圈合并时应该遵循什么原则才能达到最简表达式？
+                            鍏充簬鈥滃崱璇哄浘鈥濓紝濡傛灉閬囧埌鍚湁鏃犲叧椤癸紙閫氬父鐢?'d' 鎴?'x' 琛ㄧず锛夌殑閫昏緫鍑芥暟锛屾垜浠湪鐢诲湀鍚堝苟鏃跺簲璇ラ伒寰粈涔堝師鍒欐墠鑳借揪鍒版渶绠€琛ㄨ揪寮忥紵
                         </p>
-                        <textarea id="ai-input" class="ai-input" rows="3" placeholder="向大模型提问任何不懂的知识点..."></textarea>
-                        <button id="ai-send-btn" onclick="askAI()" style="margin-top: 12px; width: 100%; padding: 10px; border-radius: 8px; border: none; background: var(--primary); color: white; cursor: pointer; font-weight: 600; transition: 0.3s;">发送</button>
+                        <textarea id="ai-input" class="ai-input" rows="3" placeholder="鍚戝ぇ妯″瀷鎻愰棶浠讳綍涓嶆噦鐨勭煡璇嗙偣..."></textarea>
+                        <button id="ai-send-btn" onclick="askAI()" style="margin-top: 12px; width: 100%; padding: 10px; border-radius: 8px; border: none; background: var(--primary); color: white; cursor: pointer; font-weight: 600; transition: 0.3s;">鍙戦€?/button>
                         <div id="ai-response" class="ai-response"></div>
                     </div>
                 </div>
 
                 <div id="content-quiz" class="tab-content">
                     <button class="btn-ai-gen" id="ai-gen-btn" onclick="generateAIQuiz()">
-                        <span>✨ AI 实时生成测评 (基于当前图谱)</span>
+                        <span>鉁?AI 瀹炴椂鐢熸垚娴嬭瘎 (鍩轰簬褰撳墠鍥捐氨)</span>
                     </button>
 
                     <div id="quiz-container">
                         <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
-                            🎯 预设针对性训练（点击上方按钮可刷新）：
-                        </div>
+                            馃幆 棰勮閽堝鎬ц缁冿紙鐐瑰嚮涓婃柟鎸夐挳鍙埛鏂帮級锛?                        </div>
 
                         <div class="quiz-card" id="q1">
-                            <p class="quiz-question">1. 卡诺图在排列变量组合时，相邻方格遵循什么特殊编码规律，以确保“逻辑相邻”等于“几何相邻”？</p>
-                            <div class="quiz-option" onclick="selectOption('q1', 'A')">A. 二进制自然排序</div>
-                            <div class="quiz-option" onclick="selectOption('q1', 'B')">B. 格雷码 (Gray Code)</div>
-                            <div class="quiz-option" onclick="selectOption('q1', 'C')">C. BCD码</div>
-                            <div class="quiz-option" onclick="selectOption('q1', 'D')">D. 独热码 (One-Hot)</div>
+                            <p class="quiz-question">1. 鍗¤鍥惧湪鎺掑垪鍙橀噺缁勫悎鏃讹紝鐩搁偦鏂规牸閬靛惊浠€涔堢壒娈婄紪鐮佽寰嬶紝浠ョ‘淇濃€滈€昏緫鐩搁偦鈥濈瓑浜庘€滃嚑浣曠浉閭烩€濓紵</p>
+                            <div class="quiz-option" onclick="selectOption('q1', 'A')">A. 浜岃繘鍒惰嚜鐒舵帓搴?/div>
+                            <div class="quiz-option" onclick="selectOption('q1', 'B')">B. 鏍奸浄鐮?(Gray Code)</div>
+                            <div class="quiz-option" onclick="selectOption('q1', 'C')">C. BCD鐮?/div>
+                            <div class="quiz-option" onclick="selectOption('q1', 'D')">D. 鐙儹鐮?(One-Hot)</div>
                             
                             <div class="quiz-feedback" id="feedback-q1"></div>
                         </div>
 
                         <div class="quiz-card" id="q2">
-                            <p class="quiz-question">2. 在一个4变量卡诺图中，如果成功画出一个包含 4 个相邻“1”格的圈（卡诺圈），这可以在最终表达式中消除几个变量？</p>
-                            <div class="quiz-option" onclick="selectOption('q2', 'A')">A. 1 个</div>
-                            <div class="quiz-option" onclick="selectOption('q2', 'B')">B. 2 个</div>
-                            <div class="quiz-option" onclick="selectOption('q2', 'C')">C. 3 个</div>
-                            <div class="quiz-option" onclick="selectOption('q2', 'D')">D. 4 个</div>
+                            <p class="quiz-question">2. 鍦ㄤ竴涓?鍙橀噺鍗¤鍥句腑锛屽鏋滄垚鍔熺敾鍑轰竴涓寘鍚?4 涓浉閭烩€?鈥濇牸鐨勫湀锛堝崱璇哄湀锛夛紝杩欏彲浠ュ湪鏈€缁堣〃杈惧紡涓秷闄ゅ嚑涓彉閲忥紵</p>
+                            <div class="quiz-option" onclick="selectOption('q2', 'A')">A. 1 涓?/div>
+                            <div class="quiz-option" onclick="selectOption('q2', 'B')">B. 2 涓?/div>
+                            <div class="quiz-option" onclick="selectOption('q2', 'C')">C. 3 涓?/div>
+                            <div class="quiz-option" onclick="selectOption('q2', 'D')">D. 4 涓?/div>
                             
                             <div class="quiz-feedback" id="feedback-q2"></div>
                         </div>
                     </div>
 
-                    <button class="btn-submit" id="submitBtn" onclick="submitQuiz()">提交并查看 AI 解析</button>
+                    <button class="btn-submit" id="submitBtn" onclick="submitQuiz()">鎻愪氦骞舵煡鐪?AI 瑙ｆ瀽</button>
                 </div>
 
             </div>
@@ -509,20 +506,19 @@
     </div>
 
     <script>
-        // 1. Tab 切换逻辑
+        // 1. Tab 鍒囨崲閫昏緫
         function switchTab(tabName) {
-            // 移除所有 active 类
-            document.getElementById('tab-network').classList.remove('active');
+            // 绉婚櫎鎵€鏈?active 绫?            document.getElementById('tab-network').classList.remove('active');
             document.getElementById('tab-quiz').classList.remove('active');
             document.getElementById('content-network').classList.remove('active');
             document.getElementById('content-quiz').classList.remove('active');
 
-            // 激活选中的 Tab
+            // 婵€娲婚€変腑鐨?Tab
             document.getElementById('tab-' + tabName).classList.add('active');
             document.getElementById('content-' + tabName).classList.add('active');
         }
 
-        // 2. 随堂检测存储用户选择
+        // 2. 闅忓爞妫€娴嬪瓨鍌ㄧ敤鎴烽€夋嫨
         let userAnswers = {
             'q1': null,
             'q2': null
@@ -531,34 +527,31 @@
             'q1': 'B',
             'q2': 'B'
         };
-        let currentQuizData = null; // 存储当前题目详情，用于渲染解析
-
-        // 3. 选中选项效果
+        let currentQuizData = null; // 瀛樺偍褰撳墠棰樼洰璇︽儏锛岀敤浜庢覆鏌撹В鏋?
+        // 3. 閫変腑閫夐」鏁堟灉
         function selectOption(questionId, selectedValue) {
-            // 如果已经提交过了，不允许再修改
-            if (document.getElementById('submitBtn').disabled) return;
+            // 濡傛灉宸茬粡鎻愪氦杩囦簡锛屼笉鍏佽鍐嶄慨鏀?            if (document.getElementById('submitBtn').disabled) return;
 
             userAnswers[questionId] = selectedValue;
             
-            // 获取该题目下的所有选项并清除 selected 状态
-            const options = document.querySelectorAll(`#${questionId} .quiz-option`);
+            // 鑾峰彇璇ラ鐩笅鐨勬墍鏈夐€夐」骞舵竻闄?selected 鐘舵€?            const options = document.querySelectorAll(`#${questionId} .quiz-option`);
             options.forEach(opt => {
                 opt.classList.remove('selected');
-                // 判断当前点击的是哪个选项，添加 selected
+                // 鍒ゆ柇褰撳墠鐐瑰嚮鐨勬槸鍝釜閫夐」锛屾坊鍔?selected
                 if (opt.innerText.startsWith(selectedValue)) {
                     opt.classList.add('selected');
                 }
             });
         }
 
-        // 4. 提交批改与 AI 解析展示
+        // 4. 鎻愪氦鎵规敼涓?AI 瑙ｆ瀽灞曠ず
         function submitQuiz() {
             const questionIds = Object.keys(correctAnswers);
             let allAnswered = true;
             questionIds.forEach(id => { if(!userAnswers[id]) allAnswered = false; });
 
             if (!allAnswered) {
-                alert("请先完成所有题目再提交哦！");
+                alert("璇峰厛瀹屾垚鎵€鏈夐鐩啀鎻愪氦鍝︼紒");
                 return;
             }
 
@@ -580,15 +573,13 @@
                     }
                 });
 
-                // 如果是 AI 生成的，使用 AI 返回的解析
-                if (currentQuizData && currentQuizData[qId]) {
-                    feedbackEl.innerHTML = `<strong>✨ AI 知识点透析：</strong> ${isCorrect ? '回答正确！' : '很遗憾，答错了。'}<br><br>${currentQuizData[qId].explanation}`;
+                // 濡傛灉鏄?AI 鐢熸垚鐨勶紝浣跨敤 AI 杩斿洖鐨勮В鏋?                if (currentQuizData && currentQuizData[qId]) {
+                    feedbackEl.innerHTML = `<strong>鉁?AI 鐭ヨ瘑鐐归€忔瀽锛?/strong> ${isCorrect ? '鍥炵瓟姝ｇ‘锛? : '寰堥仐鎲撅紝绛旈敊浜嗐€?}<br><br>${currentQuizData[qId].explanation}`;
                 } else {
-                    // 默认静态解析
-                    if (qId === 'q1') {
-                        feedbackEl.innerHTML = `<strong>✨ AI 知识点透析：</strong> 回答正确！<br><br>卡诺图的核心原理就是利用<strong>格雷码（Gray Code）</strong>的特性。二进制递增（如 01 到 10）有两位发生突变，不满足逻辑相邻；而格雷码（00, 01, 11, 10）保证了相邻的格子永远只有 1 位变量不同。`;
+                    // 榛樿闈欐€佽В鏋?                    if (qId === 'q1') {
+                        feedbackEl.innerHTML = `<strong>鉁?AI 鐭ヨ瘑鐐归€忔瀽锛?/strong> 鍥炵瓟姝ｇ‘锛?br><br>鍗¤鍥剧殑鏍稿績鍘熺悊灏辨槸鍒╃敤<strong>鏍奸浄鐮侊紙Gray Code锛?/strong>鐨勭壒鎬с€備簩杩涘埗閫掑锛堝 01 鍒?10锛夋湁涓や綅鍙戠敓绐佸彉锛屼笉婊¤冻閫昏緫鐩搁偦锛涜€屾牸闆风爜锛?0, 01, 11, 10锛変繚璇佷簡鐩搁偦鐨勬牸瀛愭案杩滃彧鏈?1 浣嶅彉閲忎笉鍚屻€俙;
                     } else if (qId === 'q2') {
-                        feedbackEl.innerHTML = `<strong>✨ AI 知识点透析：</strong> 太棒了，完全正确！<br><br>这是一个必须掌握的规律！圈住 2^n 个格子可以消除 n 个变量。`;
+                        feedbackEl.innerHTML = `<strong>鉁?AI 鐭ヨ瘑鐐归€忔瀽锛?/strong> 澶浜嗭紝瀹屽叏姝ｇ‘锛?br><br>杩欐槸涓€涓繀椤绘帉鎻＄殑瑙勫緥锛佸湀浣?2^n 涓牸瀛愬彲浠ユ秷闄?n 涓彉閲忋€俙;
                     }
                 }
                 feedbackEl.className = 'quiz-feedback ' + (isCorrect ? 'show-success' : 'show-error');
@@ -596,18 +587,18 @@
 
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.innerText = `批改完成！得分: ${score}/${questionIds.length}`;
+            btn.innerText = `鎵规敼瀹屾垚锛佸緱鍒? ${score}/${questionIds.length}`;
 
             if (score === questionIds.length) {
                 setTimeout(() => {
                     document.getElementById('top-progress').style.width = '100%';
-                    document.getElementById('top-progress-text').innerText = '100% (已精通)';
+                    document.getElementById('top-progress-text').innerText = '100% (宸茬簿閫?';
                     document.getElementById('top-progress-text').style.color = '#10b981';
                 }, 500);
             }
         }
 
-        // 5. AI 动态出题逻辑
+        // 5. AI 鍔ㄦ€佸嚭棰橀€昏緫
         async function generateAIQuiz() {
             const btnEl = document.getElementById('ai-gen-btn');
             const containerEl = document.getElementById('quiz-container');
@@ -616,28 +607,26 @@
             const contextText = document.querySelector('.doc-snippet').innerText;
 
             btnEl.disabled = true;
-            btnEl.innerHTML = '<span class="loading-dots">AI 正在根据图谱出题</span>';
+            btnEl.innerHTML = '<span class="loading-dots">AI 姝ｅ湪鏍规嵁鍥捐氨鍑洪</span>';
             containerEl.innerHTML = '<div class="loading-skeleton"></div><div class="loading-skeleton"></div>';
             submitBtn.disabled = true;
 
             const apiKey = '';
-            const prompt = `你是一个出题专家。请根据以下知识点上下文，生成2道单选题。
-            知识点：${conceptTitle}
-            背景资料：${contextText}
+            const prompt = `浣犳槸涓€涓嚭棰樹笓瀹躲€傝鏍规嵁浠ヤ笅鐭ヨ瘑鐐逛笂涓嬫枃锛岀敓鎴?閬撳崟閫夐銆?            鐭ヨ瘑鐐癸細${conceptTitle}
+            鑳屾櫙璧勬枡锛?{contextText}
             
-            请严格按照以下 JSON 格式返回，不要有任何多余文字：
-            {
+            璇蜂弗鏍兼寜鐓т互涓?JSON 鏍煎紡杩斿洖锛屼笉瑕佹湁浠讳綍澶氫綑鏂囧瓧锛?            {
               "q1": {
-                "question": "题干",
+                "question": "棰樺共",
                 "options": ["A. xxx", "B. xxx", "C. xxx", "D. xxx"],
                 "answer": "A",
-                "explanation": "详细的 AI 解析"
+                "explanation": "璇︾粏鐨?AI 瑙ｆ瀽"
               },
               "q2": {
-                "question": "题干",
+                "question": "棰樺共",
                 "options": ["A. xxx", "B. xxx", "C. xxx", "D. xxx"],
                 "answer": "B",
-                "explanation": "详细的 AI 解析"
+                "explanation": "璇︾粏鐨?AI 瑙ｆ瀽"
               }
             }`;
 
@@ -649,7 +638,7 @@
                         'Authorization': `Bearer ${apiKey}`
                     },
                     body: JSON.stringify({
-                        model: "deepseek-chat",
+                        model: "deepseek-v4-pro",
                         messages: [{ role: "user", content: prompt }],
                         response_format: { type: 'json_object' }
                     })
@@ -661,7 +650,7 @@
                 renderQuiz(quiz);
             } catch (error) {
                 console.error(error);
-                btnEl.innerHTML = '⚠️ 生成失败，点击重试';
+                btnEl.innerHTML = '鈿狅笍 鐢熸垚澶辫触锛岀偣鍑婚噸璇?;
                 btnEl.disabled = false;
             }
         }
@@ -671,7 +660,7 @@
             const btnEl = document.getElementById('ai-gen-btn');
             const submitBtn = document.getElementById('submitBtn');
             
-            containerEl.innerHTML = `<div style="font-size: 13px; color: var(--accent); margin-bottom: 16px; font-weight: 600;">✨ 已成功生成 AI 针对性训练：</div>`;
+            containerEl.innerHTML = `<div style="font-size: 13px; color: var(--accent); margin-bottom: 16px; font-weight: 600;">鉁?宸叉垚鍔熺敓鎴?AI 閽堝鎬ц缁冿細</div>`;
             
             userAnswers = {};
             correctAnswers = {};
@@ -701,12 +690,12 @@
             });
 
             btnEl.disabled = false;
-            btnEl.innerHTML = '✨ 重新生成 AI 测评';
+            btnEl.innerHTML = '鉁?閲嶆柊鐢熸垚 AI 娴嬭瘎';
             submitBtn.disabled = false;
-            submitBtn.innerText = '提交并查看 AI 解析';
+            submitBtn.innerText = '鎻愪氦骞舵煡鐪?AI 瑙ｆ瀽';
         }
 
-        // 5. DeepSeek AI 助教逻辑
+        // 5. DeepSeek AI 鍔╂暀閫昏緫
         async function askAI() {
             const inputEl = document.getElementById('ai-input');
             const btnEl = document.getElementById('ai-send-btn');
@@ -715,23 +704,16 @@
             
             let userQuery = inputEl.value.trim();
             if (!userQuery) {
-                // 如果用户没输入，就用默认的问题
-                userQuery = contextQ;
+                // 濡傛灉鐢ㄦ埛娌¤緭鍏ワ紝灏辩敤榛樿鐨勯棶棰?                userQuery = contextQ;
             }
 
-            // UI 状态更新
-            btnEl.disabled = true;
-            btnEl.innerHTML = '<span class="loading-dots">AI 正在思考</span>';
+            // UI 鐘舵€佹洿鏂?            btnEl.disabled = true;
+            btnEl.innerHTML = '<span class="loading-dots">AI 姝ｅ湪鎬濊€?/span>';
             btnEl.style.background = '#334155';
             responseEl.style.display = 'none';
 
             const apiKey = '';
-            const systemPrompt = `你是一个名为'知微智学'的AI智能助教。你现在正在辅助学生学习《数字逻辑与数字电路》课程中的“卡诺图”章节。
-你的回复应当：
-1. 专业且严谨，准确解释电子工程和逻辑电路相关的概念。
-2. 亲切且具有启发性，鼓励学生深入思考。
-3. 简洁有力，重点突出，适合在网页侧边栏展示。
-4. 语言使用中文。`;
+            const systemPrompt = `浣犳槸涓€涓悕涓?鐭ュ井鏅哄'鐨凙I鏅鸿兘鍔╂暀銆備綘鐜板湪姝ｅ湪杈呭姪瀛︾敓瀛︿範銆婃暟瀛楅€昏緫涓庢暟瀛楃數璺€嬭绋嬩腑鐨勨€滃崱璇哄浘鈥濈珷鑺傘€?浣犵殑鍥炲搴斿綋锛?1. 涓撲笟涓斾弗璋紝鍑嗙‘瑙ｉ噴鐢靛瓙宸ョ▼鍜岄€昏緫鐢佃矾鐩稿叧鐨勬蹇点€?2. 浜插垏涓斿叿鏈夊惎鍙戞€э紝榧撳姳瀛︾敓娣卞叆鎬濊€冦€?3. 绠€娲佹湁鍔涳紝閲嶇偣绐佸嚭锛岄€傚悎鍦ㄧ綉椤典晶杈规爮灞曠ず銆?4. 璇█浣跨敤涓枃銆俙;
 
             try {
                 const response = await fetch('https://api.deepseek.com/chat/completions', {
@@ -741,7 +723,7 @@
                         'Authorization': `Bearer ${apiKey}`
                     },
                     body: JSON.stringify({
-                        model: "deepseek-chat",
+                        model: "deepseek-v4-pro",
                         messages: [
                             { role: "system", content: systemPrompt },
                             { role: "user", content: userQuery }
@@ -755,27 +737,27 @@
                 
                 if (data.choices && data.choices.length > 0) {
                     const aiResult = data.choices[0].message.content;
-                    responseEl.innerHTML = `<strong>✨ AI 解析：</strong><br>${aiResult.replace(/\n/g, '<br>')}`;
+                    responseEl.innerHTML = `<strong>鉁?AI 瑙ｆ瀽锛?/strong><br>${aiResult.replace(/\n/g, '<br>')}`;
                     responseEl.style.display = 'block';
                 } else {
                     throw new Error('Empty response from AI');
                 }
             } catch (error) {
                 console.error('AI Error:', error);
-                responseEl.innerHTML = `<span style="color: var(--danger)">⚠️ 抱歉，AI 助教暂时断开连接，请检查网络或稍后再试。</span>`;
+                responseEl.innerHTML = `<span style="color: var(--danger)">鈿狅笍 鎶辨瓑锛孉I 鍔╂暀鏆傛椂鏂紑杩炴帴锛岃妫€鏌ョ綉缁滄垨绋嶅悗鍐嶈瘯銆?/span>`;
                 responseEl.style.display = 'block';
             } finally {
                 btnEl.disabled = false;
-                btnEl.innerText = '发送';
+                btnEl.innerText = '鍙戦€?;
                 btnEl.style.background = 'var(--primary)';
             }
         }
 
-        // 6. 导出简报逻辑
+        // 6. 瀵煎嚭绠€鎶ラ€昏緫
         function previewReport() {
             const conceptTitle = document.querySelector('.concept-title').innerText;
             const contextText = document.querySelector('.doc-snippet').innerText;
-            const courseName = "数字逻辑与数字电路";
+            const courseName = "鏁板瓧閫昏緫涓庢暟瀛楃數璺?;
             const progressText = document.getElementById('top-progress-text').innerText;
             
             document.getElementById('rpt-concept').innerText = conceptTitle;
@@ -795,7 +777,7 @@
             });
 
             const submitBtn = document.getElementById('submitBtn');
-            const quizStatus = submitBtn.disabled ? `已完成测评，${submitBtn.innerText}` : "尚未完成本次针对性测评。";
+            const quizStatus = submitBtn.disabled ? `宸插畬鎴愭祴璇勶紝${submitBtn.innerText}` : "灏氭湭瀹屾垚鏈閽堝鎬ф祴璇勩€?;
             document.getElementById('rpt-quiz').innerText = quizStatus;
 
             document.getElementById('exportModal').classList.add('active');
@@ -813,56 +795,55 @@
     <div class="export-modal-overlay no-print" id="exportModal" onclick="if(event.target===this) closeExportModal()">
         <div class="report-paper">
             <div class="report-header">
-                <div class="report-title">知微智学 · 结构化知识简报</div>
+                <div class="report-title">鐭ュ井鏅哄 路 缁撴瀯鍖栫煡璇嗙畝鎶?/div>
                 <div class="report-subtitle">STRUCTURED LEARNING REPORT | AI POWERED</div>
             </div>
 
             <div class="report-section">
-                <div class="report-section-title">基本信息</div>
+                <div class="report-section-title">鍩烘湰淇℃伅</div>
                 <div class="report-content">
-                    <p><strong>所属课程：</strong> <span id="rpt-course">数字逻辑与数字电路</span></p>
-                    <p><strong>核心知识点：</strong> <span id="rpt-concept" style="color: #2563eb; font-weight: 700;">卡诺图</span></p>
-                    <p><strong>掌握进度：</strong> <span id="rpt-progress">45%</span></p>
-                    <p><strong>生成时间：</strong> <span id="rpt-date"></span></p>
+                    <p><strong>鎵€灞炶绋嬶細</strong> <span id="rpt-course">鏁板瓧閫昏緫涓庢暟瀛楃數璺?/span></p>
+                    <p><strong>鏍稿績鐭ヨ瘑鐐癸細</strong> <span id="rpt-concept" style="color: #2563eb; font-weight: 700;">鍗¤鍥?/span></p>
+                    <p><strong>鎺屾彙杩涘害锛?/strong> <span id="rpt-progress">45%</span></p>
+                    <p><strong>鐢熸垚鏃堕棿锛?/strong> <span id="rpt-date"></span></p>
                 </div>
             </div>
 
             <div class="report-section">
-                <div class="report-section-title">知识摘要 (AI 萃取)</div>
+                <div class="report-section-title">鐭ヨ瘑鎽樿 (AI 钀冨彇)</div>
                 <div class="report-content" id="rpt-summary">
-                    正在从图谱中调取上下文摘要...
+                    姝ｅ湪浠庡浘璋变腑璋冨彇涓婁笅鏂囨憳瑕?..
                 </div>
             </div>
 
             <div class="report-section">
-                <div class="report-section-title">关联实体网络</div>
+                <div class="report-section-title">鍏宠仈瀹炰綋缃戠粶</div>
                 <div id="rpt-entities">
                 </div>
             </div>
 
             <div class="report-section">
-                <div class="report-section-title">测评表现</div>
+                <div class="report-section-title">娴嬭瘎琛ㄧ幇</div>
                 <div class="report-content" id="rpt-quiz">
-                    尚未完成本次针对性测评。
-                </div>
+                    灏氭湭瀹屾垚鏈閽堝鎬ф祴璇勩€?                </div>
             </div>
 
             <div class="report-section">
-                <div class="report-section-title">AI 助教评语</div>
+                <div class="report-section-title">AI 鍔╂暀璇勮</div>
                 <div class="report-content" style="font-style: italic; color: #64748b;">
-                    “你在卡诺图的逻辑相邻性理解上表现出色。建议继续探索‘无关项’在复杂逻辑化简中的应用，这是进一步提升电路设计效率的关键。” —— 知微 AI
+                    鈥滀綘鍦ㄥ崱璇哄浘鐨勯€昏緫鐩搁偦鎬х悊瑙ｄ笂琛ㄧ幇鍑鸿壊銆傚缓璁户缁帰绱⑩€樻棤鍏抽」鈥欏湪澶嶆潅閫昏緫鍖栫畝涓殑搴旂敤锛岃繖鏄繘涓€姝ユ彁鍗囩數璺璁℃晥鐜囩殑鍏抽敭銆傗€?鈥斺€?鐭ュ井 AI
                 </div>
             </div>
 
             <div style="margin-top: 50px; border-top: 1px dashed #e2e8f0; padding-top: 20px; text-align: center; font-size: 12px; color: #94a3b8;">
-                本简报由 知微智学 (KGC) 平台自动生成，仅供内部学习参考。
-            </div>
+                鏈畝鎶ョ敱 鐭ュ井鏅哄 (KGC) 骞冲彴鑷姩鐢熸垚锛屼粎渚涘唴閮ㄥ涔犲弬鑰冦€?            </div>
 
             <div style="margin-top: 40px; display: flex; justify-content: center; gap: 20px;" class="no-print">
-                <button onclick="closeExportModal()" style="padding: 10px 30px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; cursor: pointer;">返回</button>
-                <button onclick="printReport()" style="padding: 10px 30px; border-radius: 6px; border: none; background: #2563eb; color: white; cursor: pointer; font-weight: 600;">确认打印/导出 PDF</button>
+                <button onclick="closeExportModal()" style="padding: 10px 30px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; cursor: pointer;">杩斿洖</button>
+                <button onclick="printReport()" style="padding: 10px 30px; border-radius: 6px; border: none; background: #2563eb; color: white; cursor: pointer; font-weight: 600;">纭鎵撳嵃/瀵煎嚭 PDF</button>
             </div>
         </div>
     </div>
 </body>
 </html>
+
