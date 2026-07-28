@@ -67,6 +67,19 @@ public class FileUploadController {
      * POST /api/v1/files/{fileId}/parse
      * 返回 DeepSeek 提取的知识图谱 JSON 数据
      */
+    @DeleteMapping("/{fileId}")
+    public ResponseEntity<Void> deleteFile(@PathVariable("fileId") Long fileId,
+                                           org.springframework.security.core.Authentication authentication) {
+        User currentUser = null;
+        if (authentication != null) {
+            String username = authentication.getName();
+            currentUser = userService.getUserByUsername(username);
+        }
+
+        fileStorageService.deleteFile(fileId, currentUser);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{fileId}/parse")
     public ResponseEntity<String> parseFile(@PathVariable("fileId") Long fileId) {
         try {

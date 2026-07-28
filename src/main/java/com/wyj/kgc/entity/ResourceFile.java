@@ -33,9 +33,13 @@ public class ResourceFile {
     @Column(nullable = false, length = 1024)
     private String filePath; // 文件在F盘上存储的绝对路径
 
-    // 这个ID用来关联到未来的 "Course" (课程) 表
-    // 目前我们先简单地把它当做一个数字存起来
-    @Column(nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id")
+    @JsonIgnore
+    private Course course;
+
+    // 保留一个只读的 courseId，方便返回 JSON 时带有课程 ID，且不与上述映射冲突
+    @Column(name = "course_id", insertable = false, updatable = false)
     private Long courseId;
 
     /**

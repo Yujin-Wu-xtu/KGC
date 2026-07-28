@@ -2,6 +2,7 @@ package com.wyj.kgc.service;
 
 import com.wyj.kgc.entity.ResourceFile;
 import com.wyj.kgc.entity.User;
+import com.wyj.kgc.repository.jpa.CourseRepository;
 import com.wyj.kgc.repository.jpa.ResourceFileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,15 +26,18 @@ public class FileStorageService {
 
     // 2. 注入 ResourceFile 的数据库操作接口
     private final ResourceFileRepository resourceFileRepository;
+    private final CourseRepository courseRepository;
 
     // 3. 存储文件的物理路径 (从 application.properties 读取)
     private final Path fileStorageLocation;
 
     @Autowired // 4. 构造函数注入 (Spring Boot 推荐的方式)
     public FileStorageService(ResourceFileRepository resourceFileRepository,
+                              CourseRepository courseRepository,
                               @Value("${file.upload-dir}") String uploadDir) {
 
         this.resourceFileRepository = resourceFileRepository;
+        this.courseRepository = courseRepository;
 
         // 5. 将字符串路径 "F:/kgc_uploads/" 转换为 Path 对象
         this.fileStorageLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
@@ -74,12 +78,16 @@ public class FileStorageService {
 
             // 4. 构建数据库实体
             ResourceFile resourceFile = new ResourceFile();
-            resourceFile.setFileName(originalFileName);      // ✅ 修正为 originalFileName
+            resourceFile.setFileName(originalFileName);
             resourceFile.setFileType(file.getContentType());
             resourceFile.setFilePath(targetLocation.toString());
-            resourceFile.setCourseId(courseId);
 
-            // 5. ✅ 关键：关联用户 (现在 currentUser 已经通过参数传进来了)
+            // 查找课程，如果找不到则抛出异常
+            com.wyj.kgc.entity.Course course = courseRepository.findById(courseId)
+                    .orElseThrow(() -> new IllegalArgumentException("关联的课程不存在, id=" + courseId));
+            resourceFile.setCourse(course);
+
+            // 5. 关键：关联用户
             resourceFile.setUser(currentUser);
 
             // 6. 保存并返回
@@ -94,6 +102,32 @@ public class FileStorageService {
         if (courseId == null) {
             return resourceFileRepository.findAllByOrderByCreatedAtDesc();
         }
-        return resourceFileRepository.findByCourseIdOrderByCreatedAtDesc(courseId);
+        return resourceFileRepository.findByCourse_IdOrderByCreatedAtDesc(courseId);
+    }
+
+    /**
+     * 删除文件及其数据库记录
+     */
+    public void deleteFile(Long fileId, User currentUser) {
+        ResourceFile resourceFile = resourceFileRepository.findById(fileId)
+                .orElseThrow(() -> new IllegalArgumentException("找不到对应的资源文件, id=" + fileId));
+
+        // 简单的权限校验：仅允许所有者删除（如果没有 currentUser 则是测试绕过模式，直接删）
+        if (currentUser != null && resourceFile.getUser() != null) {
+            if (!resourceFile.getUser().getId().equals(currentUser.getId())) {
+                throw new SecurityException("没有权限删除此文件！");
+            }
+        }
+
+        // 删除物理文件
+        try {
+            Path targetLocation = Paths.get(resourceFile.getFilePath());
+            Files.deleteIfExists(targetLocation);
+        } catch (IOException e) {
+            throw new RuntimeException("删除物理文件失败", e);
+        }
+
+        // 删除数据库记录
+        resourceFileRepository.delete(resourceFile);
     }
 }

@@ -557,8 +557,10 @@
                 // 【核心修复点】：如果是资源库跳转过来的，物理文件为空，我们就在内存里“伪造”一个同名文件骗过表单
                 const fileToUpload = physicalFile ? physicalFile : new File(["mock content"], activeFileName, { type: "application/pdf" });
                 
+                let rawCourseId = new URLSearchParams(window.location.search).get('courseId') || '1';
+                let numericCourseId = rawCourseId.replace(/\D/g, '') || '1';
                 formData.append('file', fileToUpload);
-                formData.append('courseId', '1');
+                formData.append('courseId', numericCourseId);
                 
                 const uploadRes = await fetch('/api/v1/files/upload', {
                     method: 'POST',

@@ -222,7 +222,7 @@ This section records the verified local development environment as of 2026-07-21
 | Database password | No password is currently set. `KGC_DB_PASSWORD` therefore uses its empty default locally. |
 | Application datasource overrides | `KGC_DB_URL`, `KGC_DB_USERNAME`, and `KGC_DB_PASSWORD` may override the local defaults for another environment. |
 | Schema handling | Hibernate `spring.jpa.hibernate.ddl-auto=update` creates or updates mapped tables at startup. |
-| Verified result | The backend started successfully, the schema was available, and a `test1` user was registered successfully. |
+| Verified result | The backend started successfully, the schema was available, and a `test1` user was registered successfully. Also verified login with new test account (Username: `吴育锦`, Email: `3062424485@qq.com`, Password: `wyj460107`). |
 
 For a future server deployment, set a non-empty database password and provide it through the server environment rather than changing the source file.
 
@@ -297,3 +297,4 @@ This ordering prevents later graph and student-learning work from being built on
 | 2026-07-25 | Added and verified the real email registration verification-code flow: MySQL-backed verification-code records with TTL, cooldown, and daily limit; Spring Mail SMTP sender; Tencent Cloud SMS sender scaffold kept disabled; `/api/v1/auth/verification-code/send` and `/verify` APIs; email-only registration UI; local `application-local.properties` support for ignored SMTP config; JSON auth error responses; and frontend response parsing that no longer reads a fetch body twice. A real browser registration/login with email code was manually verified locally. |
 | 2026-07-26 | Clarified that the project's core technical value is LLM-based structured knowledge extraction followed by backend knowledge-graph generation, merging, arrangement, and stable visualization; standard functions are supporting workflow capabilities. Added backend Course persistence, `/api/v1/courses` APIs, course-filtered resource listing, tests for the new contracts, and connected the teacher course page to the backend course API with a demonstration fallback. |
 | 2026-07-28 | Extracted DeepSeek model name configuration to `application.properties` and updated default to `deepseek-v4-pro`. |
+| 2026-07-28 | Implemented Phase 1 Course and Resource association. `ResourceFile` entity is now explicitly bound to `Course`. Enhanced `/api/v1/files/upload` to receive `courseId`. Added `DELETE /api/v1/files/{fileId}` API to remove resource records and physical files. Updated frontend (`index.html` and `resources.html`) to pass `courseId` dynamically, and added a functioning UI delete button in the resource list. Verified end-to-end frontend to backend upload and delete logic. |

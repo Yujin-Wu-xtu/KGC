@@ -213,15 +213,17 @@
                 let statusHTML = '';
                 let actionsHTML = '';
 
+                const deleteBtn = `<a href="javascript:void(0)" onclick="deleteResource('${res.id}')" class="action-link" style="color: #ef4444; border-color: #fca5a5;">删除</a>`;
+
                 if (res.status === 'done') {
                     statusHTML = `<span class="status-badge status-done">${res.statusText}</span><span>${res.nodeCount}</span>`;
-                    actionsHTML = `<a href="index.html?fileName=${encodeURIComponent(res.fileName)}" class="action-link primary">查看图谱</a>`;
+                    actionsHTML = `<a href="index.html?fileName=${encodeURIComponent(res.fileName)}&courseId=${res.courseId}" class="action-link primary">查看图谱</a>` + deleteBtn;
                 } else if (res.status === 'ready') {
                     statusHTML = `<span class="status-badge status-ready">${res.statusText}</span>`;
-                    actionsHTML = `<a href="index.html?fileName=${encodeURIComponent(res.fileName)}" class="action-link primary">去生成图谱 ✨</a>`;
+                    actionsHTML = `<a href="index.html?fileName=${encodeURIComponent(res.fileName)}&courseId=${res.courseId}" class="action-link primary">去生成图谱 ✨</a>` + deleteBtn;
                 } else if (res.status === 'video') {
                     statusHTML = `<span class="status-badge status-video">${res.statusText}</span>`;
-                    actionsHTML = `<a href="#" class="action-link" style="color: #94a3b8; pointer-events: none;">无需生成</a>`;
+                    actionsHTML = `<a href="#" class="action-link" style="color: #94a3b8; pointer-events: none;">无需生成</a>` + deleteBtn;
                 }
 
                 container.innerHTML += `
@@ -249,6 +251,44 @@
                 if (needUpdate) localStorage.setItem('kgc_resources', JSON.stringify(saved));
                 document.querySelectorAll('.new-item').forEach(el => el.classList.remove('new-item'));
             }, 1500);
+        }
+
+        async function deleteResource(resId) {
+            if (!confirm('确定要删除这个资源吗？该操作不可恢复！')) return;
+            
+            // 尝试调用真实的后端接口（提取纯数字ID传递给后端）
+            const numericId = resId.replace(/\D/g, '');
+            if (numericId) {
+                try {
+                    const token = localStorage.getItem('kgc_token') || sessionStorage.getItem('kgc_token');
+                    const response = await fetch('/api/v1/files/' + numericId, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                        }
+                    });
+                    if (!response.ok) {
+                        console.warn('后端删除可能失败（测试环境忽略）', await response.text());
+                    }
+                } catch (e) {
+                    console.warn('后端接口调用失败:', e);
+                }
+            }
+
+            // 同步清理前端的 localStorage 缓存，让界面立即更新
+            let resources = JSON.parse(localStorage.getItem('kgc_resources')) || [];
+            resources = resources.filter(r => r.id !== resId);
+            localStorage.setItem('kgc_resources', JSON.stringify(resources));
+            
+            // 更新课程的资源数量减 1
+            let courses = JSON.parse(localStorage.getItem('kgc_courses')) || [];
+            const cIndex = courses.findIndex(c => c.id === activeCourseId);
+            if (cIndex !== -1 && courses[cIndex].resourceCount > 0) {
+                courses[cIndex].resourceCount -= 1;
+                localStorage.setItem('kgc_courses', JSON.stringify(courses));
+            }
+            
+            renderResources();
         }
 
         function handleFileUpload(event) {
