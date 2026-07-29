@@ -58,3 +58,23 @@ kgc_uploads/
 ### Large local media kept outside source control ###
 *.mp4
 KGC_PROJECT_BASELINE.md
+
+### Generated and temporary development artifacts ###
+*.class
+*.bak
+
+### Local project documents kept outside public source control ###
+/*.doc
+/*.docx
+/*.pdf
+/*.xls
+/*.xlsx
+/*.ppt
+/*.pptx
+
+### Root-level scratch scripts and generated notes ###
+/generate_doc.py
+/update_docx.py
+/temp_doc.txt
+/test_*.ps1
+/verify_script*.ps1
