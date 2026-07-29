@@ -215,6 +215,203 @@
 
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
+        /* ===== 图谱编辑 UI 样式 ===== */
+
+        /* 编辑工具栏 */
+        .graph-toolbar {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            gap: 8px;
+            z-index: 15;
+        }
+        .toolbar-btn {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            color: var(--text-main);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .toolbar-btn:hover {
+            background: #eff6ff;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37,99,235,0.15);
+        }
+        .toolbar-btn.danger:hover {
+            background: #fef2f2;
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        /* 右键上下文菜单 */
+        .context-menu {
+            position: fixed;
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 6px 0;
+            min-width: 180px;
+            z-index: 1000;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            display: none;
+            animation: menuFadeIn 0.15s ease;
+        }
+        @keyframes menuFadeIn {
+            from { opacity: 0; transform: scale(0.95) translateY(-4px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .context-menu-item {
+            padding: 9px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.15s;
+            color: var(--text-main);
+        }
+        .context-menu-item:hover { background: #eff6ff; color: var(--primary-color); }
+        .context-menu-item.danger { color: #ef4444; }
+        .context-menu-item.danger:hover { background: #fef2f2; }
+        .context-menu-divider { height: 1px; background: var(--border-color); margin: 4px 0; }
+
+        /* 模态弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: overlayIn 0.2s ease;
+        }
+        .modal-overlay.active { display: flex; }
+        @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal {
+            background: white;
+            border-radius: 14px;
+            padding: 28px;
+            width: 400px;
+            max-width: 90vw;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            animation: modalIn 0.25s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal h3 {
+            margin: 0 0 20px 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .modal-field {
+            margin-bottom: 16px;
+        }
+        .modal-field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .modal-field input, .modal-field select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        .modal-field input:focus, .modal-field select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+        .modal-btn {
+            padding: 9px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1.5px solid #e2e8f0;
+            background: white;
+            color: var(--text-main);
+            transition: all 0.2s;
+        }
+        .modal-btn:hover { background: #f8fafc; }
+        .modal-btn.primary {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            border: none;
+            box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+        }
+        .modal-btn.primary:hover {
+            box-shadow: 0 4px 12px rgba(37,99,235,0.4);
+            transform: translateY(-1px);
+        }
+        .modal-btn.danger {
+            background: #ef4444;
+            color: white;
+            border: none;
+        }
+
+        /* 关系连线模式提示条 */
+        .link-mode-banner {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 15;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+            animation: bannerPulse 2s ease-in-out infinite;
+        }
+        @keyframes bannerPulse { 0%, 100% { box-shadow: 0 4px 16px rgba(37,99,235,0.3); } 50% { box-shadow: 0 4px 24px rgba(37,99,235,0.5); } }
+        .link-mode-banner button {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
     </style>
 </head>
 <body>
@@ -253,6 +450,19 @@
     </div>
 
     <div class="main-content">
+        <!-- 编辑工具栏 -->
+        <div class="graph-toolbar">
+            <button class="toolbar-btn" onclick="showAddNodeModal()">➕ 添加节点</button>
+            <button class="toolbar-btn" onclick="enterLinkMode()">🔗 添加关系</button>
+            <button class="toolbar-btn" onclick="refreshGraph()">🔄 刷新图谱</button>
+        </div>
+
+        <!-- 连线模式提示条 -->
+        <div class="link-mode-banner" id="linkModeBanner">
+            🔗 连线模式：请依次点击 <b>起点</b> 和 <b>终点</b> 节点
+            <button onclick="exitLinkMode()">取消</button>
+        </div>
+
         <div id="graph-container"></div>
         <div class="loader-overlay" id="loader">
             <div class="spinner"></div>
@@ -260,34 +470,50 @@
         </div>
     </div>
 
+    <!-- 右键上下文菜单 -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" id="ctxRename" onclick="handleCtxRename()">✏️ 重命名节点</div>
+        <div class="context-menu-item" id="ctxAddChild" onclick="handleCtxAddChild()">➕ 添加子节点并连线</div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item danger" id="ctxDelete" onclick="handleCtxDelete()">🗑️ 删除节点</div>
+    </div>
+
+    <!-- 通用模态弹窗 -->
+    <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this) closeModal()">
+        <div class="modal" id="modalContent"></div>
+    </div>
+
     <script>
-        // --- 新增：自动接收从资源库传过来的文件 ---
-        let autoLoadedFileName = null;
+        // --- 全局参数：从 URL 获取课程 ID 和文件名 ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseId = urlParams.get('courseId') || '1'; // 兼容旧的默认值
+        let autoLoadedFileName = urlParams.get('fileName') || null;
 
         document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const fileName = urlParams.get('fileName');
-            if (fileName) {
-                autoLoadedFileName = fileName;
-                // 模拟文件已选中的 UI 效果
-                document.querySelector('.upload-text').textContent = fileName;
+            // 如果从资源库跳转过来，显示已选文件
+            if (autoLoadedFileName) {
+                document.querySelector('.upload-text').textContent = autoLoadedFileName;
                 document.querySelector('.upload-subtext').textContent = '已从资源库快速导入';
                 document.querySelector('.upload-area').style.borderColor = '#10b981';
                 document.querySelector('.upload-area').style.background = 'rgba(16, 185, 129, 0.05)';
-                
-                // 打印一条酷炫的日志
-                addLog(`[系统联动] 已成功接收资源库免密传输文件：${fileName}`, 'info');
+                addLog(`[系统联动] 已成功接收资源库免密传输文件：${autoLoadedFileName}`, 'info');
             }
 
-            // --- 新增：自动加载上一次生成的图谱数据（持久化演示） ---
-            const savedGraph = localStorage.getItem('kgc_current_graph');
-            if (savedGraph) {
-                const graphData = JSON.parse(savedGraph);
-                setTimeout(() => {
-                    addLog(`[自动恢复] 检测到本地缓存的图谱数据，正在为您恢复渲染...`, 'success');
-                    renderGraph(graphData);
-                }, 500);
-            }
+            // --- 从后端 API 恢复该课程已有的图谱数据 ---
+            fetch(`http://localhost:8081/api/v1/courses/${courseId}/graph`)
+                .then(res => res.json())
+                .then(graphData => {
+                    if (graphData.nodes && graphData.nodes.length > 0) {
+                        currentGraphData = graphData; // 缓存后端原始数据
+                        addLog(`[后端恢复] 从服务器加载课程图谱：${graphData.nodes.length} 个节点`, 'success');
+                        renderGraph(transformBackendData(graphData));
+                    } else {
+                        addLog(`[提示] 该课程暂无已生成的图谱，请上传文件并解析。`, 'info');
+                    }
+                })
+                .catch(() => {
+                    addLog(`[离线模式] 后端不可用，等待手动解析。`, 'warn');
+                });
         });
         // 初始化 ECharts
         const chartDom = document.getElementById('graph-container');
@@ -554,15 +780,13 @@
                 
                 const formData = new FormData();
                 
-                // 【核心修复点】：如果是资源库跳转过来的，物理文件为空，我们就在内存里“伪造”一个同名文件骗过表单
+                // 如果是资源库跳转过来的，物理文件为空，用内存文件兜底
                 const fileToUpload = physicalFile ? physicalFile : new File(["mock content"], activeFileName, { type: "application/pdf" });
                 
-                let rawCourseId = new URLSearchParams(window.location.search).get('courseId') || '1';
-                let numericCourseId = rawCourseId.replace(/\D/g, '') || '1';
                 formData.append('file', fileToUpload);
-                formData.append('courseId', numericCourseId);
+                formData.append('courseId', courseId);
                 
-                const uploadRes = await fetch('/api/v1/files/upload', {
+                const uploadRes = await fetch('http://localhost:8081/api/v1/files/upload', {
                     method: 'POST',
                     body: formData
                 });
@@ -575,7 +799,7 @@
                 loaderText.textContent = 'DeepSeek LLM 深层信息抽取中...';
                 addLog(`开始提取纯文本，并发起图谱抽取任务，调用 API: /api/v1/files/${fileId}/parse (耐心等待数十秒)...`);
                 
-                const parseRes = await fetch(`/api/v1/files/${fileId}/parse`, {
+                const parseRes = await fetch(`http://localhost:8081/api/v1/files/${fileId}/parse`, {
                     method: 'POST'
                 });
                 
@@ -586,74 +810,380 @@
 
                 loaderText.textContent = '聚合知识网络属性中...';
                 
-                const aiNodes = parseData.nodes || [];
-                const aiRelationships = parseData.relationships || [];
+                const finalGraphData = transformBackendData(parseData);
 
-                const graphNodes = aiNodes.map((n, idx) => ({
-                    id: n.name,
-                    name: n.name,
-                    label: n.label || 'Concept',
-                    category: 0,
-                    symbolSize: idx === 0 ? 60 : 35 + Math.random() * 15
-                }));
-
-                const graphLinks = aiRelationships.map(r => ({
-                    source: r.from,
-                    target: r.to,
-                    value: r.type,
-                    type: r.type
-                }));
-
-                addLog(`成功构建 ${graphNodes.length} 个节点、${graphLinks.length} 条关系，正在渲染...`, 'success');
-
-                const finalGraphData = {
-                    nodes: graphNodes,
-                    links: graphLinks,
-                    categories: [{ name: '概念 (Concept)' }]
-                };
+                addLog(`成功构建 ${finalGraphData.nodes.length} 个节点、${finalGraphData.links.length} 条关系，正在渲染...`, 'success');
 
                 renderGraph(finalGraphData);
 
-                // 【核心演示逻辑】：持久化存储图谱，确保跳转后不丢失
-                localStorage.setItem('kgc_current_graph', JSON.stringify(finalGraphData));
-                
-                // 【核心演示逻辑】：更新 localStorage，让学生端也能看到“已解析”的状态
-                updateLocalStorageStatus(activeFileName, graphNodes.length);
+                // 图谱已通过后端 API 持久化到 Neo4j，刷新页面将从后端恢复
+                addLog(`[持久化] 图谱已保存至后端数据库 (courseId=${courseId})`, 'success');
 
             } catch (err) {
                 // 如果后端没开，网络请求报错，会被这里优雅地接住，展示 Mock 的震撼图谱
                 addLog(err.message, 'error');
-                addLog('由于真实流程因客观原因受阻，正在自动恢复至 Fallback Mock 数据进行优雅展示以完成截图目标。', 'warn');
+                addLog('由于真实流程因客观原因受阻，正在自动恢复至 Fallback Mock 数据进行优雅展示。', 'warn');
                 
                 renderGraph(mockGraphData); // 出错兜底
-                localStorage.setItem('kgc_current_graph', JSON.stringify(mockGraphData)); // 兜底数据也持久化
-
-                updateLocalStorageStatus(activeFileName, 35); // Mock 状态也更新一下
             } finally {
                 loader.classList.remove('active');
             }
         }
 
-        function updateLocalStorageStatus(fileName, nodeCount) {
-            let resources = JSON.parse(localStorage.getItem('kgc_resources')) || [];
-            const resIndex = resources.findIndex(r => r.fileName === fileName);
-            
-            if (resIndex !== -1) {
-                const res = resources[resIndex];
-                res.status = 'done';
-                res.statusText = '萃取完成';
-                res.nodeCount = nodeCount + ' 个相关节点';
-                localStorage.setItem('kgc_resources', JSON.stringify(resources));
-                
-                // 同时更新课程的总节点数
-                let courses = JSON.parse(localStorage.getItem('kgc_courses')) || [];
-                const cIndex = courses.findIndex(c => c.id === res.courseId);
-                if (cIndex !== -1) {
-                    courses[cIndex].nodeCount += nodeCount;
-                    localStorage.setItem('kgc_courses', JSON.stringify(courses));
+        /**
+         * 将后端 GraphDataDTO 或 DeepSeek 原始返回格式统一转为前端 ECharts 渲染所需格式。
+         * 
+         * 后端 API 格式：{ nodes: [{id, name, label, sourceFileId}], links: [{id, source, target, type}] }
+         * DeepSeek 格式：{ nodes: [{name}], relationships: [{from, to, type}] }
+         * 
+         * 输出统一格式：{ nodes: [{id, name, ...}], links: [{id, source, target, value, type}] }
+         */
+        function transformBackendData(backendData) {
+            const graphNodes = (backendData.nodes || []).map((n, idx) => ({
+                id: String(n.id || n.name),  // DeepSeek 格式无 id，用 name 作为 id
+                name: n.name,
+                label: n.label || 'Concept',
+                category: 0,
+                symbolSize: idx === 0 ? 60 : 35 + Math.random() * 15
+            }));
+
+            // 兼容两种关系格式：后端用 links(source/target)，DeepSeek 用 relationships(from/to)
+            const rawLinks = backendData.links || backendData.relationships || [];
+            const graphLinks = rawLinks.map(l => ({
+                id: l.id || null,
+                source: String(l.source || l.from),
+                target: String(l.target || l.to),
+                value: l.type,
+                type: l.type
+            }));
+
+            return {
+                nodes: graphNodes,
+                links: graphLinks,
+                categories: [{ name: '概念 (Concept)' }]
+            };
+        }
+
+        // ===================== 图谱编辑：全局状态 =====================
+        const API_BASE = 'http://localhost:8081/api/v1';
+        let currentGraphData = null;     // 缓存当前渲染的图谱数据（后端原始格式）
+        let selectedNodeForCtx = null;   // 右键选中的节点信息 {id, name}
+        let linkMode = false;            // 是否处于连线模式
+        let linkSourceNode = null;       // 连线模式下的起点节点
+
+        // ===================== 右键菜单 =====================
+        const ctxMenu = document.getElementById('contextMenu');
+
+        // 点击任意位置关闭菜单
+        document.addEventListener('click', () => { ctxMenu.style.display = 'none'; });
+
+        function showContextMenu(x, y, nodeInfo) {
+            selectedNodeForCtx = nodeInfo;
+            ctxMenu.style.left = x + 'px';
+            ctxMenu.style.top = y + 'px';
+            ctxMenu.style.display = 'block';
+        }
+
+        // ===================== 模态弹窗 =====================
+        function showModal(html) {
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        // ===================== 刷新图谱 =====================
+        async function refreshGraph() {
+            try {
+                const res = await fetch(`${API_BASE}/courses/${courseId}/graph`);
+                const graphData = await res.json();
+                currentGraphData = graphData; // 缓存后端原始数据
+                if (graphData.nodes && graphData.nodes.length > 0) {
+                    renderGraph(transformBackendData(graphData));
+                    addLog(`[刷新] 图谱已更新：${graphData.nodes.length} 节点`, 'success');
+                } else {
+                    addLog('[刷新] 课程图谱为空。', 'info');
                 }
-                addLog(`[演示同步] 已自动同步至 localStorage，课程及资源状态已更新。`, 'success');
+            } catch (e) {
+                addLog('[刷新失败] ' + e.message, 'error');
             }
+        }
+
+        // ===================== 添加节点 =====================
+        function showAddNodeModal() {
+            showModal(`
+                <h3>➕ 添加新节点</h3>
+                <div class="modal-field">
+                    <label>节点名称</label>
+                    <input type="text" id="newNodeName" placeholder="如：递归算法" autofocus>
+                </div>
+                <div class="modal-field">
+                    <label>节点标签</label>
+                    <input type="text" id="newNodeLabel" value="Concept" placeholder="Concept / Property / Algorithm">
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn" onclick="closeModal()">取消</button>
+                    <button class="modal-btn primary" onclick="doAddNode()">添加</button>
+                </div>
+            `);
+            setTimeout(() => document.getElementById('newNodeName')?.focus(), 100);
+        }
+
+        async function doAddNode() {
+            const name = document.getElementById('newNodeName').value.trim();
+            const label = document.getElementById('newNodeLabel').value.trim() || 'Concept';
+            if (!name) return addLog('节点名称不能为空', 'error');
+            try {
+                const res = await fetch(`${API_BASE}/courses/${courseId}/graph/nodes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, label })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || '添加失败');
+                addLog(`[添加节点] 成功：${name} (ID: ${data.id})`, 'success');
+                closeModal();
+                refreshGraph();
+            } catch (e) { addLog('[添加节点失败] ' + e.message, 'error'); }
+        }
+
+        // ===================== 右键：重命名节点 =====================
+        function handleCtxRename() {
+            if (!selectedNodeForCtx) return;
+            const node = selectedNodeForCtx;
+            showModal(`
+                <h3>✏️ 重命名节点</h3>
+                <div class="modal-field">
+                    <label>当前名称</label>
+                    <input type="text" value="${node.name}" disabled style="opacity:0.6">
+                </div>
+                <div class="modal-field">
+                    <label>新名称</label>
+                    <input type="text" id="renameNodeName" value="${node.name}" autofocus>
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn" onclick="closeModal()">取消</button>
+                    <button class="modal-btn primary" onclick="doRenameNode('${node.id}')">保存</button>
+                </div>
+            `);
+            setTimeout(() => { const el = document.getElementById('renameNodeName'); el?.focus(); el?.select(); }, 100);
+        }
+
+        async function doRenameNode(nodeId) {
+            const name = document.getElementById('renameNodeName').value.trim();
+            if (!name) return addLog('名称不能为空', 'error');
+            try {
+                const res = await fetch(`${API_BASE}/courses/${courseId}/graph/nodes/${nodeId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || '重命名失败');
+                addLog(`[重命名] ${selectedNodeForCtx.name} → ${name}`, 'success');
+                closeModal();
+                refreshGraph();
+            } catch (e) { addLog('[重命名失败] ' + e.message, 'error'); }
+        }
+
+        // ===================== 右键：添加子节点并自动连线 =====================
+        function handleCtxAddChild() {
+            if (!selectedNodeForCtx) return;
+            const parent = selectedNodeForCtx;
+            showModal(`
+                <h3>➕ 添加子节点</h3>
+                <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">将自动从 <b>${parent.name}</b> 连线到新节点</p>
+                <div class="modal-field">
+                    <label>新节点名称</label>
+                    <input type="text" id="childNodeName" placeholder="如：快速排序" autofocus>
+                </div>
+                <div class="modal-field">
+                    <label>关系类型</label>
+                    <input type="text" id="childRelType" value="CONTAINS" placeholder="CONTAINS / RELATED_TO">
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn" onclick="closeModal()">取消</button>
+                    <button class="modal-btn primary" onclick="doAddChildNode('${parent.id}')">创建并连线</button>
+                </div>
+            `);
+            setTimeout(() => document.getElementById('childNodeName')?.focus(), 100);
+        }
+
+        async function doAddChildNode(parentId) {
+            const name = document.getElementById('childNodeName').value.trim();
+            const relType = document.getElementById('childRelType').value.trim() || 'CONTAINS';
+            if (!name) return addLog('节点名称不能为空', 'error');
+            try {
+                // 1) 创建节点
+                const nodeRes = await fetch(`${API_BASE}/courses/${courseId}/graph/nodes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, label: 'Concept' })
+                });
+                const nodeData = await nodeRes.json();
+                if (!nodeRes.ok) throw new Error(nodeData.message || '节点创建失败');
+
+                // 2) 创建关系
+                const relRes = await fetch(`${API_BASE}/courses/${courseId}/graph/relationships`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sourceNodeId: Number(parentId), targetNodeId: nodeData.id, type: relType })
+                });
+                if (!relRes.ok) { const d = await relRes.json(); throw new Error(d.message || '连线失败'); }
+
+                addLog(`[添加子节点] ${name} ← [${relType}] ← ${selectedNodeForCtx.name}`, 'success');
+                closeModal();
+                refreshGraph();
+            } catch (e) { addLog('[添加子节点失败] ' + e.message, 'error'); }
+        }
+
+        // ===================== 右键：删除节点 =====================
+        function handleCtxDelete() {
+            if (!selectedNodeForCtx) return;
+            const node = selectedNodeForCtx;
+            showModal(`
+                <h3>🗑️ 确认删除</h3>
+                <p style="font-size:14px; margin:0 0 8px 0;">确定要删除节点 <b>「${node.name}」</b> 吗？</p>
+                <p style="font-size:13px; color:#ef4444; margin:0 0 16px 0;">⚠ 该节点的所有关系也会被一并删除，此操作不可撤销。</p>
+                <div class="modal-actions">
+                    <button class="modal-btn" onclick="closeModal()">取消</button>
+                    <button class="modal-btn danger" onclick="doDeleteNode('${node.id}', '${node.name}')">删除</button>
+                </div>
+            `);
+        }
+
+        async function doDeleteNode(nodeId, nodeName) {
+            try {
+                const res = await fetch(`${API_BASE}/courses/${courseId}/graph/nodes/${nodeId}`, { method: 'DELETE' });
+                if (!res.ok && res.status !== 204) {
+                    const data = await res.json();
+                    throw new Error(data.message || '删除失败');
+                }
+                addLog(`[删除节点] 已删除：${nodeName}`, 'success');
+                closeModal();
+                refreshGraph();
+            } catch (e) { addLog('[删除失败] ' + e.message, 'error'); }
+        }
+
+        // ===================== 连线模式 =====================
+        function enterLinkMode() {
+            linkMode = true;
+            linkSourceNode = null;
+            document.getElementById('linkModeBanner').style.display = 'flex';
+            addLog('[连线模式] 请点击起点节点...', 'info');
+        }
+
+        function exitLinkMode() {
+            linkMode = false;
+            linkSourceNode = null;
+            document.getElementById('linkModeBanner').style.display = 'none';
+            addLog('[连线模式] 已取消', 'info');
+        }
+
+        function handleLinkModeClick(nodeInfo) {
+            if (!linkSourceNode) {
+                // 选择起点
+                linkSourceNode = nodeInfo;
+                addLog(`[连线模式] 起点已选：${nodeInfo.name}，请点击终点节点...`, 'info');
+            } else {
+                // 选择终点，弹窗输入关系类型
+                const source = linkSourceNode;
+                const target = nodeInfo;
+                if (source.id === target.id) {
+                    addLog('[连线模式] 起点和终点不能是同一节点', 'warn');
+                    return;
+                }
+                showModal(`
+                    <h3>🔗 创建关系</h3>
+                    <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">
+                        <b>${source.name}</b> → <b>${target.name}</b>
+                    </p>
+                    <div class="modal-field">
+                        <label>关系类型</label>
+                        <input type="text" id="linkRelType" value="RELATED_TO" placeholder="RELATED_TO / CONTAINS / PREREQUISITE" autofocus>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="modal-btn" onclick="closeModal(); exitLinkMode();">取消</button>
+                        <button class="modal-btn primary" onclick="doAddRelationship(${source.id}, ${target.id})">创建</button>
+                    </div>
+                `);
+                setTimeout(() => { const el = document.getElementById('linkRelType'); el?.focus(); el?.select(); }, 100);
+            }
+        }
+
+        async function doAddRelationship(sourceId, targetId) {
+            const type = document.getElementById('linkRelType').value.trim() || 'RELATED_TO';
+            try {
+                const res = await fetch(`${API_BASE}/courses/${courseId}/graph/relationships`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sourceNodeId: sourceId, targetNodeId: targetId, type })
+                });
+                if (!res.ok) { const d = await res.json(); throw new Error(d.message || '连线失败'); }
+                addLog(`[添加关系] 成功：${linkSourceNode.name} -[${type}]→ ...`, 'success');
+                closeModal();
+                exitLinkMode();
+                refreshGraph();
+            } catch (e) { addLog('[添加关系失败] ' + e.message, 'error'); }
+        }
+
+        // ===================== 注入右键和连线事件到 renderGraph =====================
+        // 保存原始 renderGraph 的引用，对其增强
+        const _originalRenderGraph = renderGraph;
+        renderGraph = function(data) {
+            _originalRenderGraph(data);
+
+            // 解除旧事件，绑定新事件
+            myChart.off('contextmenu');
+            myChart.getZr().off('contextmenu');
+
+            // 节点右键菜单
+            myChart.getZr().on('contextmenu', function(e) {
+                e.event.preventDefault(); // 阻止浏览器默认菜单
+            });
+
+            myChart.on('contextmenu', function(params) {
+                params.event.event.preventDefault();
+                if (params.componentType === 'series' && params.data) {
+                    // 需要找到此节点对应的后端 ID
+                    const nodeName = params.data.name || params.name;
+                    const backendNode = findBackendNodeByName(nodeName);
+                    if (backendNode) {
+                        showContextMenu(params.event.event.clientX, params.event.event.clientY, backendNode);
+                    }
+                }
+            });
+
+            // 重新绑定点击事件（覆盖原来的学习跳转逻辑，加入连线模式判断）
+            myChart.off('click');
+            myChart.on('click', function(params) {
+                if (params.componentType === 'series' && params.data) {
+                    const nodeName = params.data.name || params.name;
+                    const backendNode = findBackendNodeByName(nodeName);
+
+                    if (linkMode && backendNode) {
+                        handleLinkModeClick(backendNode);
+                        return; // 连线模式下不触发折叠/跳转
+                    }
+
+                    // 默认行为：日志
+                    if (params.data.children && params.data.children.length > 0) {
+                        addLog(`展开/收起分支：${nodeName}`);
+                    } else {
+                        addLog(`叶子节点：${nodeName}（右键可编辑）`, 'info');
+                    }
+                }
+            });
+        };
+
+        /**
+         * 根据节点名称从缓存的后端数据中查找节点信息（id + name）。
+         */
+        function findBackendNodeByName(name) {
+            if (!currentGraphData || !currentGraphData.nodes) return null;
+            const n = currentGraphData.nodes.find(n => n.name === name);
+            return n ? { id: n.id, name: n.name } : null;
         }
     </script>
 </body>
