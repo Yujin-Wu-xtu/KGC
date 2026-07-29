@@ -189,13 +189,13 @@ public class KnowledgeGraphService {
                     node.getSourceFileId()));
         }
 
-        // 构建关系查询 Cypher：统一使用 id(n) 和 id(m) 作为 source/target
+        // Cypher 查询返回关系 ID、起点 ID、终点 ID 和关系类型
         String cypher;
         if (courseId != null) {
             cypher = "MATCH (n:KnowledgeNode {courseId: $courseId})-[r]->(m:KnowledgeNode {courseId: $courseId}) "
-                   + "RETURN id(n) as sourceId, id(m) as targetId, type(r) as type";
+                   + "RETURN id(r) as relId, id(n) as sourceId, id(m) as targetId, type(r) as type";
         } else {
-            cypher = "MATCH (n)-[r]->(m) RETURN id(n) as sourceId, id(m) as targetId, type(r) as type";
+            cypher = "MATCH (n)-[r]->(m) RETURN id(r) as relId, id(n) as sourceId, id(m) as targetId, type(r) as type";
         }
 
         List<com.wyj.kgc.dto.graph.LinkDTO> linkDTOs = new ArrayList<>();
@@ -204,21 +204,138 @@ public class KnowledgeGraphService {
             neo4jClient.query(cypher)
                     .bind(courseId).to("courseId")
                     .fetch().all().forEach(record -> {
-                        String source = String.valueOf(record.get("sourceId"));
-                        String target = String.valueOf(record.get("targetId"));
-                        String type = (String) record.get("type");
-                        linkDTOs.add(new com.wyj.kgc.dto.graph.LinkDTO(source, target, type));
+                        linkDTOs.add(new com.wyj.kgc.dto.graph.LinkDTO(
+                                String.valueOf(record.get("relId")),
+                                String.valueOf(record.get("sourceId")),
+                                String.valueOf(record.get("targetId")),
+                                (String) record.get("type")));
                     });
         } else {
             neo4jClient.query(cypher)
                     .fetch().all().forEach(record -> {
-                        String source = String.valueOf(record.get("sourceId"));
-                        String target = String.valueOf(record.get("targetId"));
-                        String type = (String) record.get("type");
-                        linkDTOs.add(new com.wyj.kgc.dto.graph.LinkDTO(source, target, type));
+                        linkDTOs.add(new com.wyj.kgc.dto.graph.LinkDTO(
+                                String.valueOf(record.get("relId")),
+                                String.valueOf(record.get("sourceId")),
+                                String.valueOf(record.get("targetId")),
+                                (String) record.get("type")));
                     });
         }
 
         return new com.wyj.kgc.dto.graph.GraphDataDTO(nodeDTOs, linkDTOs);
     }
+
+    // ===================== 节点 CRUD =====================
+
+    /**
+     * 在指定课程中添加一个新节点。
+     */
+    public KnowledgeNode addNode(Long courseId, String name, String label) {
+        // 课程内同名检查
+        KnowledgeNode existing = knowledgeNodeRepository.findByNameAndCourseId(name, courseId);
+        if (existing != null) {
+            throw new RuntimeException("该课程中已存在同名节点: " + name);
+        }
+        KnowledgeNode node = new KnowledgeNode(name, label != null ? label : "Concept", null, courseId);
+        return knowledgeNodeRepository.save(node);
+    }
+
+    /**
+     * 更新节点名称和/或标签。
+     */
+    public KnowledgeNode updateNode(Long courseId, Long nodeId, String name, String label) {
+        KnowledgeNode node = knowledgeNodeRepository.findById(nodeId)
+                .orElseThrow(() -> new RuntimeException("节点不存在: " + nodeId));
+        if (!courseId.equals(node.getCourseId())) {
+            throw new RuntimeException("该节点不属于此课程");
+        }
+        // 如果改名了，检查新名称在课程内是否冲突
+        if (name != null && !name.equals(node.getName())) {
+            KnowledgeNode conflict = knowledgeNodeRepository.findByNameAndCourseId(name, courseId);
+            if (conflict != null && !conflict.getId().equals(nodeId)) {
+                throw new RuntimeException("该课程中已存在同名节点: " + name);
+            }
+            node.setName(name);
+        }
+        if (label != null) {
+            node.setLabel(label);
+        }
+        return knowledgeNodeRepository.save(node);
+    }
+
+    /**
+     * 删除节点及其所有关系。
+     */
+    public void deleteNode(Long courseId, Long nodeId) {
+        KnowledgeNode node = knowledgeNodeRepository.findById(nodeId)
+                .orElseThrow(() -> new RuntimeException("节点不存在: " + nodeId));
+        if (!courseId.equals(node.getCourseId())) {
+            throw new RuntimeException("该节点不属于此课程");
+        }
+        // DETACH DELETE 会同时删除节点的所有关系
+        neo4jClient.query("MATCH (n) WHERE id(n) = $nodeId DETACH DELETE n")
+                .bind(nodeId).to("nodeId")
+                .run();
+    }
+
+    // ===================== 关系 CRUD =====================
+
+    /**
+     * 在指定课程中添加一条关系。
+     * 起点和终点必须都属于该课程。
+     */
+    public void addRelationship(Long courseId, Long sourceNodeId, Long targetNodeId, String type) {
+        if (type == null || type.isBlank()) {
+            type = "RELATED_TO";
+        }
+        // 验证类型名称合法性（Neo4j 关系类型只允许字母、数字和下划线）
+        if (!type.matches("^[A-Za-z_][A-Za-z0-9_]*$")) {
+            throw new RuntimeException("关系类型名称不合法（仅允许字母、数字和下划线）: " + type);
+        }
+        // 确保两个节点都存在且属于该课程
+        String cypher = "MATCH (a:KnowledgeNode), (b:KnowledgeNode) "
+                + "WHERE id(a) = $sourceId AND id(b) = $targetId "
+                + "AND a.courseId = $courseId AND b.courseId = $courseId "
+                + "MERGE (a)-[:" + type + "]->(b)";
+        neo4jClient.query(cypher)
+                .bind(sourceNodeId).to("sourceId")
+                .bind(targetNodeId).to("targetId")
+                .bind(courseId).to("courseId")
+                .run();
+    }
+
+    /**
+     * 更新关系类型（删除旧关系并创建同方向的新类型关系）。
+     */
+    public void updateRelationship(Long courseId, Long relationshipId, String newType) {
+        if (newType == null || newType.isBlank()) {
+            throw new RuntimeException("新的关系类型不能为空");
+        }
+        if (!newType.matches("^[A-Za-z_][A-Za-z0-9_]*$")) {
+            throw new RuntimeException("关系类型名称不合法: " + newType);
+        }
+        // Neo4j 不能直接修改关系类型，需要先拿到起终点，删旧建新
+        String cypher = "MATCH (a)-[r]->(b) WHERE id(r) = $relId "
+                + "AND a.courseId = $courseId AND b.courseId = $courseId "
+                + "DELETE r "
+                + "WITH a, b "
+                + "MERGE (a)-[:" + newType + "]->(b)";
+        neo4jClient.query(cypher)
+                .bind(relationshipId).to("relId")
+                .bind(courseId).to("courseId")
+                .run();
+    }
+
+    /**
+     * 删除一条关系。
+     */
+    public void deleteRelationship(Long courseId, Long relationshipId) {
+        String cypher = "MATCH (a)-[r]->(b) WHERE id(r) = $relId "
+                + "AND a.courseId = $courseId "
+                + "DELETE r";
+        neo4jClient.query(cypher)
+                .bind(relationshipId).to("relId")
+                .bind(courseId).to("courseId")
+                .run();
+    }
 }
+
