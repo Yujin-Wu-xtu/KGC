@@ -99,267 +99,235 @@
     </main>
 
     <script>
-        // 1. 确保 resources.html 里的默认数据是最完整版
-        const defaultCourses = [
-            { 
-                id: 'course_1', 
-                title: '数据结构与算法', 
-                tag: '专业核心课', 
-                desc: '计算机科学底层基石课程，包含基本线性结构、树、图，以及常见查找与排序算法逻辑深度图谱。', 
-                resourceCount: 12, 
-                nodeCount: 840, 
-                coverClass: 'cover-1', 
-                isNew: false 
-            },
-            { 
-                id: 'course_2', 
-                title: '计算机组成原理', 
-                tag: '专业核心课', 
-                desc: '深入系统底层运行逻辑，主要图谱章节涉及指令系统、中央处理器、总线网络及输入输出机制。', 
-                resourceCount: 4, 
-                nodeCount: 220, 
-                coverClass: 'cover-2', 
-                isNew: false 
-            },
-            { 
-                id: 'course_3', 
-                title: '线性代数', 
-                tag: '平台基础课', 
-                desc: '数学与人工智能的基石。图谱涵盖了矩阵运算、向量空间、行列式及特征值分解等核心理论及应用链路。', 
-                resourceCount: 5, 
-                nodeCount: 305, 
-                coverClass: 'cover-3', 
-                isNew: false 
-            }
-        ];
-
-        const defaultResources = [
-            { id: 'res_1', courseId: 'course_1', fileName: '第二章：线性表与链表核心指南.pdf', fileSizeMB: '4.2', timeString: '2026-04-03 09:00', status: 'done', statusText: '萃取完成', nodeCount: '25 个相关节点', iconStr: '📄', iconClass: 'icon-pdf' },
-            { id: 'res_2', courseId: 'course_1', fileName: '图的最小生成树算法演示.pptx', fileSizeMB: '12.5', timeString: '2026-04-04 10:30', status: 'ready', statusText: '待生成图谱', nodeCount: '', iconStr: '📊', iconClass: 'icon-ppt' },
-            { id: 'res_3', courseId: 'course_1', fileName: '红黑树的旋转与插入详解录播.mp4', fileSizeMB: '45.8', timeString: '2026-04-04 14:10', status: 'video', statusText: '仅作为辅导资料', nodeCount: '', iconStr: '🎥', iconClass: 'icon-mp4' }
-        ];
-
+        // ==================== 状态 ====================
         let activeCourseId = null;
+        let courses = [];   // 从后端加载的课程列表
+        let resources = []; // 从后端加载的资源列表
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // 【核心防御】：不管 localStorage 里是 null 还是 "[]" 还是破损数据，只要没有有效课程，统统强制重置！
-            let coursesStr = localStorage.getItem('kgc_courses');
-            let courses = coursesStr ? JSON.parse(coursesStr) : [];
-            if (!courses || courses.length === 0) {
-                courses = defaultCourses;
-                localStorage.setItem('kgc_courses', JSON.stringify(defaultCourses));
-            }
-
-            let resourcesStr = localStorage.getItem('kgc_resources');
-            let resources = resourcesStr ? JSON.parse(resourcesStr) : [];
-            if (!resources || resources.length === 0) {
-                resources = defaultResources;
-                localStorage.setItem('kgc_resources', JSON.stringify(defaultResources));
-            }
-
-            // 安全解析 URL
+        // ==================== 初始化 ====================
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadCourses();
+            // 从 URL 参数读取 courseId，没有则选第一个
             const urlParams = new URLSearchParams(window.location.search);
-            activeCourseId = urlParams.get('courseId');
-            
-            // 安全判定：如果传过来的 ID 根本找不到（比如被清理了），或者干脆没传，则默认选中第一个课程，绝不报错崩溃！
-            if (!activeCourseId || !courses.some(c => c.id === activeCourseId)) { 
-                activeCourseId = courses[0].id; 
-                // 顺手把 URL 栏那个错误的 ID 抹掉，保持洁癖
-                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-                window.history.replaceState({path:newUrl}, '', newUrl);
+            const urlCourseId = urlParams.get('courseId');
+            if (urlCourseId && courses.some(c => String(c.id) === urlCourseId)) {
+                activeCourseId = urlCourseId;
+            } else if (courses.length > 0) {
+                activeCourseId = String(courses[0].id);
             }
-
-            renderRibbon(courses);
-            renderResources();
+            renderRibbon();
+            if (activeCourseId) await loadResources();
         });
 
-        function renderRibbon(courses) {
+        // ==================== 课程加载 ====================
+        async function loadCourses() {
+            try {
+                const res = await fetch('/api/v1/courses');
+                if (res.ok) {
+                    courses = await res.json();
+                }
+            } catch (e) {
+                console.warn('加载课程列表失败', e);
+            }
+            if (!courses || courses.length === 0) {
+                document.getElementById('courseRibbon').innerHTML =
+                    '<div class="course-pill" style="color:#ef4444;">暂无课程，请先在课程管理中创建课程</div>';
+            }
+        }
+
+        // ==================== 课程导航条 ====================
+        function renderRibbon() {
             const ribbon = document.getElementById('courseRibbon');
             ribbon.innerHTML = '';
             courses.forEach(course => {
-                const isActive = course.id === activeCourseId ? 'active' : '';
-                ribbon.innerHTML += `<div class="course-pill ${isActive}" onclick="switchCourse('${course.id}')">${course.title}</div>`;
+                const isActive = String(course.id) === String(activeCourseId) ? 'active' : '';
+                ribbon.innerHTML += `<div class="course-pill ${isActive}" onclick="switchCourse('${course.id}')">${escapeHtml(course.name)}</div>`;
             });
         }
 
-        function switchCourse(courseId) {
-            activeCourseId = courseId;
-            const courses = JSON.parse(localStorage.getItem('kgc_courses'));
-            renderRibbon(courses);
+        async function switchCourse(courseId) {
+            activeCourseId = String(courseId);
+            renderRibbon();
+            await loadResources();
+            const newUrl = window.location.protocol + '//' + window.location.host + window.location.pathname + '?courseId=' + courseId;
+            window.history.pushState({ path: newUrl }, '', newUrl);
+        }
+
+        // ==================== 资源加载 ====================
+        async function loadResources() {
+            document.getElementById('resourceTitle').innerText = '已入库资源';
+            const container = document.getElementById('fileListContainer');
+            container.innerHTML = '<div class="empty-state"><div>加载中...</div></div>';
+
+            const activeCourse = courses.find(c => String(c.id) === String(activeCourseId));
+            if (activeCourse) {
+                document.getElementById('resourceTitle').innerText = `已入库资源 (${activeCourse.name})`;
+            }
+
+            try {
+                const res = await fetch('/api/v1/files?courseId=' + activeCourseId);
+                if (!res.ok) throw new Error('加载失败');
+                resources = await res.json();
+            } catch (e) {
+                console.warn('加载资源列表失败', e);
+                resources = [];
+            }
             renderResources();
-            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?courseId=' + courseId;
-            window.history.pushState({path:newUrl}, '', newUrl);
+        }
+
+        function getFileIconAndClass(fileName) {
+            const lower = (fileName || '').toLowerCase();
+            if (lower.endsWith('.pdf')) return { icon: '📄', cls: 'icon-pdf' };
+            if (lower.endsWith('.ppt') || lower.endsWith('.pptx')) return { icon: '📊', cls: 'icon-ppt' };
+            if (lower.endsWith('.doc') || lower.endsWith('.docx')) return { icon: '📝', cls: 'icon-word' };
+            if (lower.endsWith('.mp4')) return { icon: '🎥', cls: 'icon-mp4' };
+            return { icon: '📄', cls: 'icon-pdf' };
+        }
+
+        function getAuthHeaders() {
+            const token = localStorage.getItem('kgc_token') || sessionStorage.getItem('kgc_token');
+            if (token) return { 'Authorization': 'Bearer ' + token };
+            return {};
         }
 
         function renderResources() {
-            const courses = JSON.parse(localStorage.getItem('kgc_courses'));
-            const resources = JSON.parse(localStorage.getItem('kgc_resources'));
-            
-            // 确保能找到 activeCourse，有前置的安全检查，这里万无一失
-            const activeCourse = courses.find(c => c.id === activeCourseId);
-            document.getElementById('resourceTitle').innerText = `已入库资源 (${activeCourse.title})`;
-
             const container = document.getElementById('fileListContainer');
             container.innerHTML = '';
-            const currentResources = resources.filter(r => r.courseId === activeCourseId);
 
-            if (currentResources.length === 0) {
-                container.innerHTML = `<div class="empty-state"><div style="font-size: 32px; margin-bottom: 12px;">📁</div><div style="font-size: 16px; font-weight: 600; color: var(--text-dark);">暂无课程资源</div><div style="font-size: 13px; margin-top: 4px;">该课程下还未上传任何资料，快将课件拖拽到上方试试吧！</div></div>`;
+            if (!resources || resources.length === 0) {
+                container.innerHTML = `<div class="empty-state">
+                    <div style="font-size: 32px; margin-bottom: 12px;">📁</div>
+                    <div style="font-size: 16px; font-weight: 600; color: var(--text-dark);">暂无课程资源</div>
+                    <div style="font-size: 13px; margin-top: 4px;">该课程下还未上传任何资料，快将课件拖拽到上方试试吧！</div>
+                </div>`;
                 return;
             }
 
-            for (let i = currentResources.length - 1; i >= 0; i--) {
-                const res = currentResources[i];
-                let statusHTML = '';
-                let actionsHTML = '';
+            // 倒序显示（最新在上）
+            for (let i = resources.length - 1; i >= 0; i--) {
+                const res = resources[i];
+                const { icon, cls } = getFileIconAndClass(res.fileName);
+                const fileSize = (res.fileType || '').includes('pdf') ? 'PDF' :
+                                (res.fileType || '').includes('word') || (res.fileType || '').includes('document') ? 'DOCX' :
+                                (res.fileType || '').includes('presentation') || (res.fileType || '').includes('powerpoint') ? 'PPTX' :
+                                (res.fileName || '').toLowerCase().endsWith('.mp4') ? 'MP4' : '-';
+                const createdAt = res.createdAt ? new Date(res.createdAt).toLocaleString('zh-CN') : '-';
 
-                const deleteBtn = `<a href="javascript:void(0)" onclick="deleteResource('${res.id}')" class="action-link" style="color: #ef4444; border-color: #fca5a5;">删除</a>`;
-
-                if (res.status === 'done') {
-                    statusHTML = `<span class="status-badge status-done">${res.statusText}</span><span>${res.nodeCount}</span>`;
-                    actionsHTML = `<a href="index.html?fileName=${encodeURIComponent(res.fileName)}&courseId=${res.courseId}" class="action-link primary">查看图谱</a>` + deleteBtn;
-                } else if (res.status === 'ready') {
-                    statusHTML = `<span class="status-badge status-ready">${res.statusText}</span>`;
-                    actionsHTML = `<a href="index.html?fileName=${encodeURIComponent(res.fileName)}&courseId=${res.courseId}" class="action-link primary">去生成图谱 ✨</a>` + deleteBtn;
-                } else if (res.status === 'video') {
-                    statusHTML = `<span class="status-badge status-video">${res.statusText}</span>`;
-                    actionsHTML = `<a href="#" class="action-link" style="color: #94a3b8; pointer-events: none;">无需生成</a>` + deleteBtn;
-                }
+                // 状态：当前 ResourceFile 实体没有 parseStatus 字段，
+                // 所有文件都可去生成图谱
+                const statusBadge = '<span class="status-badge status-ready">待生成图谱</span>';
+                const graphLink = `<a href="index.html?fileName=${encodeURIComponent(res.fileName)}&courseId=${activeCourseId}" class="action-link primary">去生成图谱 ✨</a>`;
+                const deleteBtn = `<a href="javascript:void(0)" onclick="deleteResource(${res.id})" class="action-link" style="color: #ef4444; border-color: #fca5a5;">删除</a>`;
 
                 container.innerHTML += `
-                    <div class="file-card ${res.isNew ? 'new-item' : ''}">
+                    <div class="file-card">
                         <div class="file-info">
-                            <div class="file-icon ${res.iconClass}">${res.iconStr}</div>
+                            <div class="file-icon ${cls}">${icon}</div>
                             <div class="file-details">
-                                <h4>${res.fileName}</h4>
+                                <h4>${escapeHtml(res.fileName)}</h4>
                                 <div class="file-meta">
-                                    <span>大小: ${res.fileSizeMB} MB</span>
-                                    <span>上传: ${res.timeString}</span>
-                                    ${statusHTML}
+                                    <span>类型: ${fileSize}</span>
+                                    <span>上传: ${createdAt}</span>
+                                    ${statusBadge}
                                 </div>
                             </div>
                         </div>
-                        <div class="file-actions">${actionsHTML}</div>
+                        <div class="file-actions">${graphLink}${deleteBtn}</div>
                     </div>
                 `;
             }
-
-            setTimeout(() => {
-                let saved = JSON.parse(localStorage.getItem('kgc_resources'));
-                let needUpdate = false;
-                saved.forEach(r => { if (r.isNew) { r.isNew = false; needUpdate = true; } });
-                if (needUpdate) localStorage.setItem('kgc_resources', JSON.stringify(saved));
-                document.querySelectorAll('.new-item').forEach(el => el.classList.remove('new-item'));
-            }, 1500);
         }
 
-        async function deleteResource(resId) {
-            if (!confirm('确定要删除这个资源吗？该操作不可恢复！')) return;
-            
-            // 尝试调用真实的后端接口（提取纯数字ID传递给后端）
-            const numericId = resId.replace(/\D/g, '');
-            if (numericId) {
-                try {
-                    const token = localStorage.getItem('kgc_token') || sessionStorage.getItem('kgc_token');
-                    const response = await fetch('/api/v1/files/' + numericId, {
-                        method: 'DELETE',
-                        headers: {
-                            'Authorization': 'Bearer ' + token
-                        }
-                    });
-                    if (!response.ok) {
-                        console.warn('后端删除可能失败（测试环境忽略）', await response.text());
-                    }
-                } catch (e) {
-                    console.warn('后端接口调用失败:', e);
-                }
-            }
-
-            // 同步清理前端的 localStorage 缓存，让界面立即更新
-            let resources = JSON.parse(localStorage.getItem('kgc_resources')) || [];
-            resources = resources.filter(r => r.id !== resId);
-            localStorage.setItem('kgc_resources', JSON.stringify(resources));
-            
-            // 更新课程的资源数量减 1
-            let courses = JSON.parse(localStorage.getItem('kgc_courses')) || [];
-            const cIndex = courses.findIndex(c => c.id === activeCourseId);
-            if (cIndex !== -1 && courses[cIndex].resourceCount > 0) {
-                courses[cIndex].resourceCount -= 1;
-                localStorage.setItem('kgc_courses', JSON.stringify(courses));
-            }
-            
-            renderResources();
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
         }
 
-        function handleFileUpload(event) {
+        // ==================== 真实文件上传 ====================
+        async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-
-            const fileName = file.name;
-            const fileSizeMB = Math.min((file.size / (1024 * 1024)), 49.9).toFixed(1); 
             event.target.value = '';
 
             const toast = document.getElementById('uploadToast');
-            document.getElementById('toastFileName').innerText = `正在上传：${fileName}`;
             const progressBar = document.getElementById('mockProgress');
             const progressText = document.getElementById('mockProgressText');
-            
-            progressBar.style.width = '0%'; progressText.innerText = '0%'; toast.classList.add('show');
 
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += Math.floor(Math.random() * 15) + 5; 
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                    setTimeout(() => { toast.classList.remove('show'); insertNewFileCard(fileName, fileSizeMB); }, 600);
-                }
-                progressBar.style.width = progress + '%'; progressText.innerText = progress + '%';
-            }, 300);
+            document.getElementById('toastFileName').innerText = `正在上传：${file.name}`;
+            progressBar.style.width = '0%';
+            progressText.innerText = '0%';
+            toast.classList.add('show');
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('courseId', activeCourseId);
+
+            try {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/api/v1/files/upload');
+
+                // 添加认证头
+                const token = localStorage.getItem('kgc_token') || sessionStorage.getItem('kgc_token');
+                if (token) xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+
+                // 上传进度
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const pct = Math.round((e.loaded / e.total) * 100);
+                        progressBar.style.width = pct + '%';
+                        progressText.innerText = pct + '%';
+                    }
+                });
+
+                xhr.addEventListener('load', () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        progressBar.style.width = '100%';
+                        progressText.innerText = '100%';
+                        setTimeout(() => {
+                            toast.classList.remove('show');
+                            loadResources(); // 刷新列表
+                        }, 600);
+                    } else {
+                        progressText.innerText = '上传失败';
+                        progressText.style.color = '#ef4444';
+                        setTimeout(() => toast.classList.remove('show'), 2000);
+                    }
+                });
+
+                xhr.addEventListener('error', () => {
+                    progressText.innerText = '网络错误';
+                    progressText.style.color = '#ef4444';
+                    setTimeout(() => toast.classList.remove('show'), 2000);
+                });
+
+                xhr.send(formData);
+            } catch (e) {
+                console.error('上传失败:', e);
+                progressText.innerText = '上传失败';
+                progressText.style.color = '#ef4444';
+                setTimeout(() => toast.classList.remove('show'), 2000);
+            }
         }
 
-        function insertNewFileCard(fileName, fileSizeMB) {
-            const now = new Date();
-            const timeString = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        // ==================== 删除资源 ====================
+        async function deleteResource(fileId) {
+            if (!confirm('确定要删除这个资源吗？该操作不可恢复！')) return;
 
-            let iconStr = '📄'; let iconClass = 'icon-pdf';
-            const lowerName = fileName.toLowerCase();
-            
-            let initStatus = 'ready';
-            let initStatusText = '待生成图谱';
-            
-            if (lowerName.endsWith('.ppt') || lowerName.endsWith('.pptx')) { 
-                iconStr = '📊'; iconClass = 'icon-ppt'; 
-            } else if (lowerName.endsWith('.mp4')) { 
-                iconStr = '🎥'; iconClass = 'icon-mp4'; 
-                initStatus = 'video';
-                initStatusText = '仅作为辅导资料';
-            } else if (lowerName.endsWith('.doc') || lowerName.endsWith('.docx')) { 
-                iconStr = '📝'; iconClass = 'icon-word'; 
+            try {
+                const headers = getAuthHeaders();
+                const res = await fetch('/api/v1/files/' + fileId, {
+                    method: 'DELETE',
+                    headers: headers
+                });
+                if (!res.ok && res.status !== 204) {
+                    console.warn('后端删除返回非成功状态:', res.status);
+                }
+            } catch (e) {
+                console.warn('后端删除接口调用失败:', e);
             }
-
-            const newResource = {
-                id: 'res_' + Date.now(),
-                courseId: activeCourseId,
-                fileName: fileName,
-                fileSizeMB: fileSizeMB,
-                timeString: timeString + ' (刚刚)',
-                status: initStatus,
-                statusText: initStatusText,
-                nodeCount: '',
-                iconStr: iconStr,
-                iconClass: iconClass,
-                isNew: true
-            };
-
-            let resources = JSON.parse(localStorage.getItem('kgc_resources')) || [];
-            resources.push(newResource);
-            localStorage.setItem('kgc_resources', JSON.stringify(resources));
-
-            let courses = JSON.parse(localStorage.getItem('kgc_courses')) || [];
-            const cIndex = courses.findIndex(c => c.id === activeCourseId);
-            if (cIndex !== -1) { courses[cIndex].resourceCount += 1; localStorage.setItem('kgc_courses', JSON.stringify(courses)); }
-
+            // 从本地列表中即时移除并刷新
+            resources = resources.filter(r => r.id !== fileId);
             renderResources();
         }
     </script>
