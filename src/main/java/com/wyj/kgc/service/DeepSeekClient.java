@@ -119,4 +119,69 @@ public class DeepSeekClient {
         }
         return content.trim();
     }
+
+    /**
+     * 通用聊天接口，用于 AI 助教等场景。
+     */
+    public String chat(String systemPrompt, String userQuery) {
+        return callDeepSeek(systemPrompt, userQuery, 0.7, 1000, null);
+    }
+
+    /**
+     * JSON 格式聊天接口，用于 AI 出题等需要结构化输出的场景。
+     */
+    public String chatJson(String prompt) {
+        return callDeepSeek(null, prompt, 0.0, 2000, "json_object");
+    }
+
+    private String callDeepSeek(String systemPrompt, String userMessage, double temperature, int maxTokens, String responseFormat) {
+        try {
+            var requestBodyNode = objectMapper.createObjectNode();
+            requestBodyNode.put("model", deepSeekModel);
+            requestBodyNode.put("temperature", temperature);
+            requestBodyNode.put("max_tokens", maxTokens);
+
+            var messagesArray = requestBodyNode.putArray("messages");
+            if (systemPrompt != null) {
+                var sysMsg = messagesArray.addObject();
+                sysMsg.put("role", "system");
+                sysMsg.put("content", systemPrompt);
+            }
+            var userMsg = messagesArray.addObject();
+            userMsg.put("role", "user");
+            userMsg.put("content", userMessage);
+
+            if (responseFormat != null) {
+                var rf = requestBodyNode.putObject("response_format");
+                rf.put("type", responseFormat);
+            }
+
+            String requestBody = objectMapper.writeValueAsString(requestBodyNode);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.deepseek.com/chat/completions"))
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + apiKey)
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                JsonNode rootNode = objectMapper.readTree(response.body());
+                if (rootNode.has("choices") && rootNode.get("choices").isArray()
+                        && rootNode.get("choices").size() > 0) {
+                    String content = rootNode.get("choices").get(0).get("message").get("content").asText();
+                    return cleanJsonOutput(content);
+                } else {
+                    throw new RuntimeException("DeepSeek API response format invalid: " + response.body());
+                }
+            } else {
+                throw new RuntimeException("DeepSeek API call failed with status: " + response.statusCode());
+            }
+        } catch (IOException | InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Error calling DeepSeek API", e);
+        }
+    }
 }

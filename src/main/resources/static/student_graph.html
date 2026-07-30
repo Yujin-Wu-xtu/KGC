@@ -91,7 +91,7 @@
 
             chartInstance.on('click', function (params) {
                 if (params.dataType === 'node' && params.data && params.data.id) {
-                    window.location.href = `learning_for_kar_map.html?nodeId=${params.data.id}`;
+                    window.location.href = `learning_for_kar_map.html?courseId=${currentCourseId}&nodeId=${params.data.id}`;
                 }
             });
         }

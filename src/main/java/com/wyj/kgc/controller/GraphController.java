@@ -115,5 +115,18 @@ public class GraphController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+
+    // ===================== 节点查询（学生端） =====================
+
+    /** GET /api/v1/graph/nodes/{nodeId} — 节点详情（含关联节点） */
+    @GetMapping("/graph/nodes/{nodeId}")
+    public ResponseEntity<?> getNodeDetail(@PathVariable Long nodeId) {
+        try {
+            return ResponseEntity.ok(knowledgeGraphService.getNodeDetail(nodeId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
 }
 

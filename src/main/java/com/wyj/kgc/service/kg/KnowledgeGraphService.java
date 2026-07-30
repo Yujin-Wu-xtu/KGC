@@ -279,6 +279,45 @@ public class KnowledgeGraphService {
 
     // ===================== 关系 CRUD =====================
 
+    // ===================== 节点查询（学生端） =====================
+
+    /**
+     * 获取单个节点的详细信息，包括其关联节点。
+     * 用于学生学习页面的沉浸式视图。
+     */
+    public com.wyj.kgc.dto.graph.NodeDetailDTO getNodeDetail(Long nodeId) {
+        KnowledgeNode node = knowledgeNodeRepository.findById(nodeId)
+                .orElseThrow(() -> new RuntimeException("节点不存在: " + nodeId));
+
+        // 查询关联节点：MATCH (n)-[r]-(m) WHERE id(n) = $nodeId
+        String cypher = "MATCH (n:KnowledgeNode)-[r]-(m:KnowledgeNode) WHERE id(n) = $nodeId "
+                + "RETURN id(m) as relatedId, m.name as relatedName, m.label as relatedLabel, "
+                + "type(r) as relationType, "
+                + "CASE WHEN startNode(r) = n THEN 'out' ELSE 'in' END as direction";
+
+        List<com.wyj.kgc.dto.graph.NodeDetailDTO.RelatedNode> relatedNodes = new ArrayList<>();
+        neo4jClient.query(cypher)
+                .bind(nodeId).to("nodeId")
+                .fetch().all().forEach(record -> {
+                    relatedNodes.add(new com.wyj.kgc.dto.graph.NodeDetailDTO.RelatedNode(
+                            String.valueOf(record.get("relatedId")),
+                            (String) record.get("relatedName"),
+                            (String) record.get("relatedLabel"),
+                            (String) record.get("relationType"),
+                            (String) record.get("direction")));
+                });
+
+        return new com.wyj.kgc.dto.graph.NodeDetailDTO(
+                String.valueOf(node.getId()),
+                node.getName(),
+                node.getLabel(),
+                node.getSourceFileId(),
+                node.getCourseId(),
+                relatedNodes);
+    }
+
+    // ===================== 关系 CRUD =====================
+
     /**
      * 在指定课程中添加一条关系。
      * 起点和终点必须都属于该课程。

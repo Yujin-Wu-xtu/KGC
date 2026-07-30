@@ -105,6 +105,11 @@ public class FileStorageService {
         return resourceFileRepository.findByCourse_IdOrderByCreatedAtDesc(courseId);
     }
 
+    public ResourceFile getFile(Long fileId) {
+        return resourceFileRepository.findById(fileId)
+                .orElseThrow(() -> new IllegalArgumentException("找不到对应的资源文件, id=" + fileId));
+    }
+
     /**
      * 删除文件及其数据库记录
      */

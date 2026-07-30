@@ -94,6 +94,8 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         // 放行图谱数据接口
                         .requestMatchers("/api/v1/graph/**").permitAll()
+                        // 放行 AI 代理接口
+                        .requestMatchers("/api/v1/ai/**").permitAll()
                         // 允许所有 OPTIONS 请求 (CORS 预检)
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         // 任何其他请求（主要是 API）都需要认证

@@ -67,6 +67,29 @@ public class FileUploadController {
      * POST /api/v1/files/{fileId}/parse
      * 返回 DeepSeek 提取的知识图谱 JSON 数据
      */
+    @GetMapping("/{fileId}/download")
+    public ResponseEntity<org.springframework.core.io.Resource> downloadFile(@PathVariable("fileId") Long fileId) {
+        com.wyj.kgc.entity.ResourceFile resourceFile = fileStorageService.getFile(fileId);
+        java.io.File file = new java.io.File(resourceFile.getFilePath());
+        if (!file.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+        org.springframework.core.io.Resource resource =
+                new org.springframework.core.io.UrlResource(file.toURI());
+        String encodedFilename;
+        try {
+            encodedFilename = java.net.URLEncoder.encode(resourceFile.getFileName(), "UTF-8")
+                    .replace("+", "%20");
+        } catch (java.io.UnsupportedEncodingException e) {
+            encodedFilename = resourceFile.getFileName();
+        }
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename*=UTF-8''" + encodedFilename)
+                .contentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
+
     @DeleteMapping("/{fileId}")
     public ResponseEntity<Void> deleteFile(@PathVariable("fileId") Long fileId,
                                            org.springframework.security.core.Authentication authentication) {

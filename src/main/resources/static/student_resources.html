@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知微智学 - 课程资源</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-w: 260px;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            display: flex; height: 100vh; overflow: hidden;
+        }
+
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; z-index: 10;
+        }
+        .logo-area {
+            height: 70px; display: flex; align-items: center; padding: 0 24px;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo-area h1 {
+            font-size: 20px; font-weight: 700;
+            background: linear-gradient(to right, #2563eb, #8b5cf6);
+            -webkit-background-clip: text; color: transparent; margin: 0;
+        }
+        .nav-menu { padding: 24px 16px; flex: 1; }
+        .nav-item {
+            display: flex; align-items: center; padding: 12px 16px;
+            color: var(--text-muted); text-decoration: none; border-radius: 8px;
+            margin-bottom: 8px; font-weight: 500; transition: all 0.2s;
+        }
+        .nav-item:hover { background-color: #f8fafc; color: var(--primary); }
+        .nav-item.active { background-color: #eff6ff; color: var(--primary); }
+        .nav-icon { margin-right: 12px; font-size: 18px; }
+
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .header {
+            height: 70px; background: var(--bg-card); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 32px; position: sticky; top: 0; z-index: 10;
+        }
+        .page-title { font-size: 18px; font-weight: 600; margin: 0; }
+
+        .container { padding: 32px; max-width: 1000px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+
+        .breadcrumb { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
+        .breadcrumb a { color: var(--primary); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+
+        .file-table { width: 100%; border-collapse: collapse; }
+        .file-table th {
+            text-align: left; padding: 12px 16px; font-size: 13px; font-weight: 600;
+            color: var(--text-muted); border-bottom: 2px solid var(--border);
+        }
+        .file-table td {
+            padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 14px;
+        }
+        .file-table tr:hover { background: #f8fafc; }
+
+        .file-icon {
+            width: 36px; height: 36px; border-radius: 8px; display: inline-flex;
+            align-items: center; justify-content: center; font-size: 18px; margin-right: 12px;
+            vertical-align: middle;
+        }
+        .icon-pdf { background: #fef2f2; color: #ef4444; }
+        .icon-word { background: #eff6ff; color: #2563eb; }
+        .icon-ppt { background: #fef9c3; color: #ca8a04; }
+        .icon-other { background: #f3f4f6; color: #6b7280; }
+
+        .file-name { font-weight: 500; }
+        .file-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+        .btn-download {
+            padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 500;
+            border: 1px solid var(--border); background: white; color: var(--text-dark);
+            cursor: pointer; transition: 0.2s; text-decoration: none; display: inline-block;
+        }
+        .btn-download:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .empty-state {
+            text-align: center; padding: 60px 20px; color: var(--text-muted);
+        }
+        .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; }
+
+        .back-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: var(--text-muted); text-decoration: none; font-size: 14px;
+            margin-bottom: 24px;
+        }
+        .back-link:hover { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo-area">
+            <h1>知微智学 · 学生版</h1>
+        </div>
+        <nav class="nav-menu">
+            <a href="learning.html" class="nav-item">
+                <span class="nav-icon">🏠</span> 学习主页
+            </a>
+            <a href="student_courses.html" class="nav-item">
+                <span class="nav-icon">📖</span> 我的课程
+            </a>
+            <a href="student_courses.html" class="nav-item active">
+                <span class="nav-icon">📂</span> 课件资源
+            </a>
+            <a href="learning_for_kar_map.html" class="nav-item">
+                <span class="nav-icon">🕸️</span> 知识图谱探索
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <h2 class="page-title" id="headerTitle">课程资源</h2>
+        </header>
+
+        <div class="container">
+            <a href="student_courses.html" class="back-link">← 返回课程列表</a>
+            <div class="breadcrumb">
+                课程：<span id="courseName">加载中...</span>
+            </div>
+
+            <table class="file-table" id="fileTable">
+                <thead>
+                    <tr>
+                        <th>文件名</th>
+                        <th>上传时间</th>
+                        <th style="width: 100px;">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="fileTableBody">
+                </tbody>
+            </table>
+
+            <div class="empty-state" id="emptyState" style="display:none;">
+                <div class="empty-icon">📭</div>
+                <p>该课程暂无课件资源</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseId = urlParams.get('courseId');
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!courseId) {
+                document.getElementById('headerTitle').innerText = '请选择课程';
+                document.getElementById('courseName').innerText = '未指定';
+                return;
+            }
+
+            // 并行加载课程信息和文件列表
+            await Promise.all([loadCourseInfo(), loadFiles()]);
+        });
+
+        async function loadCourseInfo() {
+            try {
+                const res = await fetch(`/api/v1/courses/${courseId}`);
+                if (res.ok) {
+                    const course = await res.json();
+                    document.getElementById('courseName').innerText = course.name;
+                    document.getElementById('headerTitle').innerText = course.name + ' - 课件资源';
+                }
+            } catch (e) {
+                console.warn('加载课程信息失败', e);
+            }
+        }
+
+        async function loadFiles() {
+            const tbody = document.getElementById('fileTableBody');
+            const empty = document.getElementById('emptyState');
+            try {
+                const res = await fetch(`/api/v1/files?courseId=${courseId}`);
+                if (!res.ok) throw new Error('加载失败');
+                const files = await res.json();
+
+                if (!files || files.length === 0) {
+                    empty.style.display = 'block';
+                    document.querySelector('.file-table').style.display = 'none';
+                    return;
+                }
+
+                document.querySelector('.file-table').style.display = '';
+                empty.style.display = 'none';
+
+                files.forEach(file => {
+                    const row = document.createElement('tr');
+                    const ext = (file.fileName || '').toLowerCase();
+                    let iconClass = 'icon-other';
+                    let iconEmoji = '📄';
+                    if (ext.endsWith('.pdf')) { iconClass = 'icon-pdf'; iconEmoji = '📕'; }
+                    else if (ext.endsWith('.doc') || ext.endsWith('.docx')) { iconClass = 'icon-word'; iconEmoji = '📘'; }
+                    else if (ext.endsWith('.ppt') || ext.endsWith('.pptx')) { iconClass = 'icon-ppt'; iconEmoji = '📙'; }
+
+                    const createdAt = file.createdAt ? new Date(file.createdAt).toLocaleDateString('zh-CN') : '-';
+
+                    row.innerHTML = `
+                        <td>
+                            <span class="file-icon ${iconClass}">${iconEmoji}</span>
+                            <span class="file-name">${escapeHtml(file.fileName)}</span>
+                            <div class="file-meta">${file.fileType || '未知类型'}</div>
+                        </td>
+                        <td>${createdAt}</td>
+                        <td>
+                            <a href="/api/v1/files/${file.id}/download" class="btn-download">下载</a>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (e) {
+                console.error('加载文件列表失败', e);
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-muted);">加载失败，请稍后重试</td></tr>';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
