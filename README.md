@@ -1,4 +1,4 @@
-# 知微智学 (KGC)
+# 知微智学
 
 > AI-powered knowledge graph automatic generation system for education
 
@@ -108,4 +108,4 @@ src/main/resources/static/  # 前端页面
 
 ---
 
-*最后更新：2026-07-30 · DeepSeek-V4-PRO*
+*最后更新：2026-07-30 ·*
