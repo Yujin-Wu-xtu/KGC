@@ -230,35 +230,31 @@
     </main>
 
     <script>
-        const defaultCourses = [
-            { id: 'course_1', title: '数据结构与算法', tag: '专业必修课', desc: '计算机科学底层基石课程，包含基本线性结构、树、图，以及常见查找与排序算法逻辑深度图谱。', progress: 65, status: '学习中', coverClass: 'cover-1' },
-            { id: 'course_2', title: '计算机组成原理', tag: '专业核心课', desc: '深入系统底层运行逻辑，主要图谱章节涉及指令系统、中央处理器、总线网络及输入输出机制。', progress: 30, status: '学习中', coverClass: 'cover-2' },
-            { id: 'course_3', title: '线性代数', tag: '平台基础课', desc: '数学与人工智能的基石。图谱涵盖了矩阵运算、向量空间、行列式及特征值分解等核心理论及应用链路。', progress: 0, status: '未开始', coverClass: 'cover-3' }
-        ];
+        const COURSE_API = '/api/v1/courses/published';
 
-        document.addEventListener('DOMContentLoaded', () => {
-            let savedCourses = localStorage.getItem('kgc_courses');
-            let coursesToRender;
-            
-            if (!savedCourses) {
-                coursesToRender = defaultCourses;
-            } else {
-                // 如果老师添加了新课程，我们要合并或者转换成学生的视图
-                const teacherCourses = JSON.parse(savedCourses);
-                coursesToRender = teacherCourses.map(tc => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch(COURSE_API);
+                if (!response.ok) throw new Error('课程列表加载失败');
+                const backendCourses = await response.json();
+                
+                const coursesToRender = backendCourses.map(tc => {
                     return {
                         id: tc.id,
-                        title: tc.title,
-                        tag: tc.tag,
-                        desc: tc.desc,
-                        progress: tc.isNew ? 0 : (tc.id === 'course_1' ? 65 : (tc.id === 'course_2' ? 30 : 0)),
-                        status: tc.isNew ? '待解析' : '学习中',
-                        coverClass: tc.coverClass,
-                        isNew: tc.isNew
+                        title: tc.name,
+                        tag: '专业课程',
+                        desc: tc.description || '暂无简介',
+                        progress: 0, // Mock progress for now
+                        status: '可学习',
+                        coverClass: 'cover-new',
+                        isNew: false
                     };
                 });
+                renderCourses(coursesToRender);
+            } catch (error) {
+                console.warn('[KGC] course API unavailable.', error);
+                document.getElementById('courseGrid').innerHTML = '<p>无法加载课程，请联系管理员。</p>';
             }
-            renderCourses(coursesToRender);
         });
 
         function renderCourses(courses) {
@@ -266,8 +262,8 @@
             grid.innerHTML = '';
             
             courses.forEach(course => {
-                let coverContent = course.isNew ? `📖<span class="course-tag new-tag">${course.tag}</span>` : `<span class="course-tag">${course.tag}</span>`;
-                let titleContent = course.isNew ? `${course.title} <span style="font-size: 12px; color: var(--success); margin-left: 4px;">● 新建</span>` : course.title;
+                let coverContent = `<span class="course-tag">${course.tag}</span>`;
+                let titleContent = course.title;
 
                 const cardHTML = `
                     <div class="course-card">
@@ -282,7 +278,7 @@
                                 <div class="progress-text"><span>学习进度 ${course.progress}%</span> <span>${course.status}</span></div>
                             </div>
                             <div class="course-actions">
-                                <a href="${course.title.includes('数字逻辑') ? 'index.html' : 'learning_for_kar_map.html'}" class="btn-action btn-primary">进入图谱学习</a>
+                                <a href="student_graph.html?courseId=${course.id}" class="btn-action btn-primary">进入图谱学习</a>
                                 <a href="#" class="btn-action btn-secondary">课件资源</a>
                             </div>
                         </div>

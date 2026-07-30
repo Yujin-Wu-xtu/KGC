@@ -57,6 +57,16 @@ public class CourseService {
         courseRepository.delete(course);
     }
 
+    public Course setCoursePublishedStatus(Long id, boolean published) {
+        Course course = getCourse(id);
+        course.setPublished(published);
+        return courseRepository.save(course);
+    }
+
+    public List<Course> listPublishedCourses() {
+        return courseRepository.findByPublishedTrueOrderByCreatedAtDesc();
+    }
+
     private String normalizeRequiredText(String value, String message) {
         String normalized = normalizeOptionalText(value);
         if (normalized == null) {

@@ -74,6 +74,21 @@ public class CourseController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/published")
+    public List<Course> listPublishedCourses() {
+        return courseService.listPublishedCourses();
+    }
+
+    @PutMapping("/{id}/publish")
+    public ResponseEntity<?> setCoursePublishedStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> request) {
+        try {
+            Boolean published = request.getOrDefault("published", false);
+            return ResponseEntity.ok(courseService.setCoursePublishedStatus(id, published));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     private User resolveOwner(Authentication authentication) {
         if (authentication == null) {
             return null;

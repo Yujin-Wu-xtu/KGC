@@ -40,6 +40,9 @@ public class Course {
     @JsonIgnore
     private User owner;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private Boolean published = false;
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
