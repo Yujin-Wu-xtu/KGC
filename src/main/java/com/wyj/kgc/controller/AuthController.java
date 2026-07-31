@@ -7,10 +7,8 @@ import com.wyj.kgc.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -46,6 +44,28 @@ public class AuthController {
                     "token", token,
                     "username", user.getUsername(),
                     "role", user.getRole().name()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/me/teacher")
+    public ResponseEntity<?> bindTeacher(Authentication authentication, @RequestBody Map<String, String> request) {
+        try {
+            if (authentication == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("message", "请先登录。"));
+            }
+            String teacherUsername = request.get("teacherUsername");
+            if (teacherUsername == null || teacherUsername.isBlank()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "teacherUsername 不能为空。"));
+            }
+            User updated = userService.bindTeacher(authentication.getName(), teacherUsername.trim());
+            return ResponseEntity.ok(Map.of(
+                    "message", "绑定成功",
+                    "teacherUsername", updated.getTeacher().getUsername()
+            ));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }

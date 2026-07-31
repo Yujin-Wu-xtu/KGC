@@ -130,6 +130,13 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("User does not exist."));
     }
 
+    public User bindTeacher(String studentUsername, String teacherUsername) {
+        User student = getUserByUsername(studentUsername);
+        User teacher = getUserByUsername(teacherUsername);
+        student.setTeacher(teacher);
+        return userRepository.save(student);
+    }
+
     public User getUserByIdentifier(String identifier) {
         return findUserByIdentifier(identifier)
                 .orElseThrow(() -> new IllegalArgumentException("User does not exist."));

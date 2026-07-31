@@ -178,6 +178,19 @@
 
                 <div class="right-col">
                     <div class="panel">
+                        <h3>🔗 绑定教师</h3>
+                        <div class="form-group">
+                            <label>输入教师用户名</label>
+                            <span class="sub-label">绑定后，你的课程列表仅显示该教师发布的课程。</span>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="teacherUsernameInput" class="form-control" placeholder="例如：teacher_wang" style="flex: 1;">
+                                <button class="btn-save" style="margin-top: 0; white-space: nowrap;" onclick="bindTeacher()">绑定</button>
+                            </div>
+                        </div>
+                        <div id="teacherBindMsg" style="font-size: 13px; margin-top: 8px;"></div>
+                    </div>
+
+                    <div class="panel">
                         <h3>模型推理参数 (Hyperparameters)</h3>
                         
                         <div class="form-group">
@@ -231,6 +244,43 @@
             </div>
         </div>
     </main>
+
+    <script>
+        const token = localStorage.getItem('kgc_token') || sessionStorage.getItem('kgc_token');
+
+        function showBindMsg(text, isError) {
+            const el = document.getElementById('teacherBindMsg');
+            el.textContent = text;
+            el.style.color = isError ? '#ef4444' : '#10b981';
+        }
+
+        async function bindTeacher() {
+            const input = document.getElementById('teacherUsernameInput');
+            const teacherUsername = input.value.trim();
+            if (!teacherUsername) {
+                showBindMsg('请输入教师用户名。', true);
+                return;
+            }
+            if (!token) {
+                showBindMsg('请先登录。', true);
+                return;
+            }
+            try {
+                const res = await fetch('/api/v1/auth/me/teacher', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ teacherUsername })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.message || '绑定失败');
+                }
+                showBindMsg('已绑定教师：' + data.teacherUsername, false);
+            } catch (e) {
+                showBindMsg(e.message, true);
+            }
+        }
+    </script>
 
 </body>
 </html>

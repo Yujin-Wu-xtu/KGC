@@ -75,8 +75,13 @@ public class CourseController {
     }
 
     @GetMapping("/published")
-    public List<Course> listPublishedCourses() {
-        return courseService.listPublishedCourses();
+    public List<Course> listPublishedCourses(Authentication authentication) {
+        User currentUser = resolveOwner(authentication);
+        User teacher = null;
+        if (currentUser != null) {
+            teacher = currentUser.getTeacher();
+        }
+        return courseService.listPublishedCourses(teacher);
     }
 
     @PutMapping("/{id}/publish")

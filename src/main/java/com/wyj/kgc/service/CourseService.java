@@ -67,6 +67,13 @@ public class CourseService {
         return courseRepository.findByPublishedTrueOrderByCreatedAtDesc();
     }
 
+    public List<Course> listPublishedCourses(User teacher) {
+        if (teacher == null) {
+            return courseRepository.findByPublishedTrueOrderByCreatedAtDesc();
+        }
+        return courseRepository.findByOwnerAndPublishedTrueOrderByCreatedAtDesc(teacher);
+    }
+
     private String normalizeRequiredText(String value, String message) {
         String normalized = normalizeOptionalText(value);
         if (normalized == null) {

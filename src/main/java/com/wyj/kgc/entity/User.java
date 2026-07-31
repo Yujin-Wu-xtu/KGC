@@ -69,6 +69,17 @@ public class User {
     private Set<ResourceFile> files = new HashSet<>();
     // --- ↑↑↑ 关键修改完毕 ↑↑↑ ---
 
+    // --- 师生归属 ---
+    /**
+     * 学生绑定的教师。
+     * 学生端展示已发布课程时，仅显示该教师拥有的课程。
+     * 教师可为 null（未绑定状态）。
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "teacher_id")
+    @JsonIgnore
+    private User teacher;
+    // --- 师生归属完毕 ---
 
     // --- JPA 生命周期回调 ---
 
