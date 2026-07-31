@@ -74,8 +74,12 @@ public class FileUploadController {
         if (!file.exists()) {
             return ResponseEntity.notFound().build();
         }
-        org.springframework.core.io.Resource resource =
-                new org.springframework.core.io.UrlResource(file.toURI());
+        org.springframework.core.io.Resource resource;
+        try {
+            resource = new org.springframework.core.io.UrlResource(file.toURI());
+        } catch (java.net.MalformedURLException e) {
+            return ResponseEntity.internalServerError().build();
+        }
         String encodedFilename;
         try {
             encodedFilename = java.net.URLEncoder.encode(resourceFile.getFileName(), "UTF-8")

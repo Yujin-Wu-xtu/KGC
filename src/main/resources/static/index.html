@@ -484,6 +484,8 @@
     </div>
 
     <script>
+        const API_BASE = '/api/v1';
+
         // --- 全局参数：从 URL 获取课程 ID 和文件名 ---
         const urlParams = new URLSearchParams(window.location.search);
         const courseId = urlParams.get('courseId') || '1'; // 兼容旧的默认值
@@ -500,7 +502,7 @@
             }
 
             // --- 从后端 API 恢复该课程已有的图谱数据 ---
-            fetch(`http://localhost:8081/api/v1/courses/${courseId}/graph`)
+            fetch(`${API_BASE}/courses/${courseId}/graph`)
                 .then(res => res.json())
                 .then(graphData => {
                     if (graphData.nodes && graphData.nodes.length > 0) {
@@ -786,7 +788,7 @@
                 formData.append('file', fileToUpload);
                 formData.append('courseId', courseId);
                 
-                const uploadRes = await fetch('http://localhost:8081/api/v1/files/upload', {
+                const uploadRes = await fetch(`${API_BASE}/files/upload`, {
                     method: 'POST',
                     body: formData
                 });
@@ -799,7 +801,7 @@
                 loaderText.textContent = 'DeepSeek LLM 深层信息抽取中...';
                 addLog(`开始提取纯文本，并发起图谱抽取任务，调用 API: /api/v1/files/${fileId}/parse (耐心等待数十秒)...`);
                 
-                const parseRes = await fetch(`http://localhost:8081/api/v1/files/${fileId}/parse`, {
+                const parseRes = await fetch(`${API_BASE}/files/${fileId}/parse`, {
                     method: 'POST'
                 });
                 
@@ -865,7 +867,6 @@
         }
 
         // ===================== 图谱编辑：全局状态 =====================
-        const API_BASE = 'http://localhost:8081/api/v1';
         let currentGraphData = null;     // 缓存当前渲染的图谱数据（后端原始格式）
         let selectedNodeForCtx = null;   // 右键选中的节点信息 {id, name}
         let linkMode = false;            // 是否处于连线模式
