@@ -364,7 +364,7 @@
             const passwordInput = form.querySelector('input[type="password"]');
             const submitButton = form.querySelector('button[type="submit"]');
             const registerLink = document.querySelector('.footer a');
-            const apiBase = window.location.protocol === 'file:' ? 'http://localhost:8081' : '';
+            const apiBase = '';
 
             identifierInput.value = new URLSearchParams(window.location.search).get('identifier') || '';
             passwordInput.value = '';
