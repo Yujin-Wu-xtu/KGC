@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestController
@@ -49,6 +50,25 @@ public class AuthController {
         }
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<?> getProfile(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "请先登录。"));
+        }
+        User user = userService.getUserByUsername(authentication.getName());
+        Map<String, Object> profile = new LinkedHashMap<>();
+        profile.put("username", user.getUsername());
+        profile.put("role", user.getRole().name());
+        profile.put("email", user.getEmail());
+        if (user.getTeacher() != null) {
+            profile.put("teacherUsername", user.getTeacher().getUsername());
+        } else {
+            profile.put("teacherUsername", null);
+        }
+        return ResponseEntity.ok(profile);
+    }
+
     @PutMapping("/me/teacher")
     public ResponseEntity<?> bindTeacher(Authentication authentication, @RequestBody Map<String, String> request) {
         try {
@@ -56,16 +76,13 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("message", "请先登录。"));
             }
-            String teacherUsername = request.get("teacherUsername");
-            if (teacherUsername == null || teacherUsername.isBlank()) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("message", "teacherUsername 不能为空。"));
-            }
-            User updated = userService.bindTeacher(authentication.getName(), teacherUsername.trim());
-            return ResponseEntity.ok(Map.of(
-                    "message", "绑定成功",
-                    "teacherUsername", updated.getTeacher().getUsername()
-            ));
+            String teacherUsername = request.getOrDefault("teacherUsername", "");
+            User updated = userService.setTeacher(authentication.getName(),
+                    teacherUsername.isBlank() ? null : teacherUsername.trim());
+            Map<String, Object> resp = new LinkedHashMap<>();
+            resp.put("message", updated.getTeacher() != null ? "绑定成功" : "已解绑");
+            resp.put("teacherUsername", updated.getTeacher() != null ? updated.getTeacher().getUsername() : null);
+            return ResponseEntity.ok(resp);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }

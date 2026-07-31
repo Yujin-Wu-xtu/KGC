@@ -137,6 +137,19 @@ public class UserService {
         return userRepository.save(student);
     }
 
+    /**
+     * 设置或清除学生的教师绑定。teacherUsername 为 null 时解绑。
+     */
+    public User setTeacher(String studentUsername, String teacherUsername) {
+        User student = getUserByUsername(studentUsername);
+        if (teacherUsername == null) {
+            student.setTeacher(null);
+        } else {
+            student.setTeacher(getUserByUsername(teacherUsername));
+        }
+        return userRepository.save(student);
+    }
+
     public User getUserByIdentifier(String identifier) {
         return findUserByIdentifier(identifier)
                 .orElseThrow(() -> new IllegalArgumentException("User does not exist."));

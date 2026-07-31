@@ -130,13 +130,24 @@
             }
         }
 
-        // 页面加载时尝试从 token 解析当前绑定信息
-        (function() {
+        // 页面加载时从后端获取真实绑定状态
+        (async function() {
             if (!token) return;
             try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                document.getElementById('teacherUsernameInput').placeholder = '输入教师用户名后点击保存';
-            } catch (e) {}
+                const res = await fetch('/api/v1/auth/me', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) return;
+                const profile = await res.json();
+                if (profile.teacherUsername) {
+                    document.getElementById('currentTeacherDisplay').textContent = profile.teacherUsername;
+                    document.getElementById('teacherUsernameInput').value = profile.teacherUsername;
+                    showBindMsg('当前绑定教师：' + profile.teacherUsername, false);
+                } else {
+                    document.getElementById('currentTeacherDisplay').textContent = '未绑定';
+                    document.getElementById('teacherUsernameInput').placeholder = '输入教师用户名后点击保存';
+                }
+            } catch (e) { /* 网络不可用时保持默认显示 */ }
         })();
     </script>
 </body>
