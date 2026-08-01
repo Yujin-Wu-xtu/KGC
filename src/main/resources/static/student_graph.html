@@ -89,8 +89,9 @@
                 chartInstance.resize();
             });
 
+            // 点击节点跳转到该知识点的学习页（保留学生端交互）
             chartInstance.on('click', function (params) {
-                if (params.dataType === 'node' && params.data && params.data.id) {
+                if (params.componentType === 'series' && params.data && params.data.id) {
                     window.location.href = `learning_for_kar_map.html?courseId=${currentCourseId}&nodeId=${params.data.id}`;
                 }
             });
@@ -119,58 +120,164 @@
                         </div>`;
                     return;
                 }
-                renderECharts(data.nodes, data.links);
+                // 与教师端 index.html 相同的树形布局渲染
+                renderGraph(data);
             } catch (error) {
                 console.error('加载图谱失败:', error);
                 document.getElementById('courseTitle').innerText = '加载图谱失败';
             }
         }
 
-        function renderECharts(nodesData, linksData) {
-            // Transform data for ECharts
-            const echartsNodes = nodesData.map(node => {
-                let color = '#3b82f6';
-                let symbolSize = 40;
-                if (node.type === 'concept') { color = '#10b981'; symbolSize = 35; }
-                else if (node.type === 'resource') { color = '#f59e0b'; symbolSize = 25; }
+        // ===================== 树形图谱渲染（与教师端 index.html 对齐） =====================
 
-                return {
-                    id: String(node.id),
-                    name: node.name,
-                    category: node.type,
-                    symbolSize: symbolSize,
-                    itemStyle: { color: color, borderColor: '#fff', borderWidth: 2 },
-                    label: { show: true, position: 'right', formatter: '{b}', fontSize: 12 }
-                };
-            });
+        function renderGraph(data) {
+            function convertToTree(nodes, links) {
+                if (!nodes || nodes.length === 0) return null;
 
-            const echartsLinks = linksData.map(link => {
-                return {
-                    id: String(link.id),
-                    source: String(link.sourceId),
-                    target: String(link.targetId),
-                    value: link.relationType,
-                    label: { show: true, formatter: '{c}', fontSize: 10 }
-                };
-            });
+                let inDegree = {};
+                let adjacencyList = {};
+                let nodeMap = {};
+
+                nodes.forEach(n => {
+                    let id = n.id || n.name;
+                    inDegree[id] = 0;
+                    adjacencyList[id] = [];
+                    nodeMap[id] = { name: n.name, id: id };
+                });
+
+                links.forEach(l => {
+                    let src = l.source !== undefined ? l.source : l.sourceId;
+                    let tgt = l.target !== undefined ? l.target : l.targetId;
+                    if (!adjacencyList[src]) adjacencyList[src] = [];
+                    if (!adjacencyList[src].includes(tgt)) {
+                        adjacencyList[src].push(tgt);
+                    }
+                    if (inDegree[tgt] === undefined) inDegree[tgt] = 0;
+                    inDegree[tgt]++;
+                });
+
+                let rootIds = Object.keys(inDegree).filter(id => inDegree[id] === 0);
+                let rootId = rootIds.length > 0 ? rootIds[0] : (nodes[0] ? (nodes[0].id || nodes[0].name) : null);
+
+                if (!rootId) return null;
+
+                const branchColors = ['#f97316', '#ef4444', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'];
+                let branchIndex = 0;
+
+                function buildNode(id, level, parentColor, currentPath) {
+                    if (currentPath.has(id)) return null;
+                    currentPath.add(id);
+
+                    let nodeName = nodeMap[id] ? nodeMap[id].name : id;
+                    let currentColor = parentColor;
+
+                    if (level === 1) {
+                        currentColor = branchColors[branchIndex % branchColors.length];
+                        branchIndex++;
+                    } else if (level === 0) {
+                        currentColor = '#1e293b';
+                    }
+
+                    let nData = {
+                        id: id, // 保留后端节点 ID，用于点击跳转学习页
+                        name: nodeName,
+                        itemStyle: {
+                            color: level === 0 ? '#1e293b' : '#fff',
+                            borderColor: currentColor,
+                            borderWidth: 2
+                        },
+                        lineStyle: {
+                            color: level === 0 ? '#cbd5e1' : currentColor,
+                        },
+                        label: {
+                            backgroundColor: '#ffffff',
+                            color: level === 0 ? '#ffffff' : '#334155',
+                            borderColor: level === 0 ? 'transparent' : currentColor,
+                            borderWidth: level === 0 ? 0 : 1.5,
+                            padding: [8, 14],
+                            borderRadius: 6,
+                            fontSize: level === 0 ? 16 : 13,
+                            fontWeight: level === 0 ? 'bold' : '500',
+                            shadowColor: 'rgba(0, 0, 0, 0.05)',
+                            shadowBlur: 10,
+                            shadowOffsetY: 2
+                        },
+                        children: []
+                    };
+
+                    if (level === 0) {
+                        nData.label.backgroundColor = '#1e293b';
+                    } else if (level === 1) {
+                        nData.label.backgroundColor = currentColor;
+                        nData.label.color = '#ffffff';
+                        nData.label.borderWidth = 0;
+                    }
+
+                    if (adjacencyList[id]) {
+                        for (let childId of adjacencyList[id]) {
+                            let childNode = buildNode(childId, level + 1, currentColor, currentPath);
+                            if (childNode) nData.children.push(childNode);
+                        }
+                    }
+
+                    currentPath.delete(id);
+                    return nData;
+                }
+
+                return buildNode(rootId, 0, '#ccc', new Set());
+            }
+
+            const treeData = convertToTree(data.nodes, data.links);
+
+            if (!treeData) {
+                document.getElementById('courseTitle').innerText = '该课程暂无有效的图谱数据';
+                return;
+            }
 
             const option = {
-                tooltip: { formatter: '{b}' },
-                series: [{
-                    type: 'graph',
-                    layout: 'force',
-                    force: { repulsion: 800, edgeLength: [80, 150], gravity: 0.1 },
-                    roam: true,
-                    draggable: true,
-                    label: { show: true },
-                    edgeSymbol: ['circle', 'arrow'],
-                    edgeSymbolSize: [4, 8],
-                    edgeLabel: { fontSize: 10 },
-                    data: echartsNodes,
-                    links: echartsLinks,
-                    lineStyle: { color: '#94a3b8', width: 2, curveness: 0.2 },
-                    emphasis: { focus: 'adjacency', lineStyle: { width: 4 } }
-                }]
+                backgroundColor: 'transparent',
+                tooltip: {
+                    trigger: 'item',
+                    triggerOn: 'mousemove'
+                },
+                series: [
+                    {
+                        type: 'tree',
+                        data: [treeData],
+                        top: '10%',
+                        left: '12%',
+                        bottom: '10%',
+                        right: '30%',
+                        roam: true,
+                        symbol: 'emptyCircle',
+                        symbolSize: 8,
+                        edgeShape: 'polyline',
+                        edgeForkPosition: '50%',
+                        initialTreeDepth: 2,
+                        lineStyle: {
+                            width: 2,
+                            color: '#cbd5e1'
+                        },
+                        label: {
+                            position: 'top',
+                            verticalAlign: 'bottom',
+                            align: 'center',
+                            distance: 6
+                        },
+                        leaves: {
+                            label: {
+                                position: 'right',
+                                verticalAlign: 'middle',
+                                align: 'left',
+                                distance: 12,
+                                fontWeight: '500'
+                            }
+                        },
+                        expandAndCollapse: true,
+                        animationDuration: 600,
+                        animationDurationUpdate: 400
+                    }
+                ]
             };
 
             chartInstance.setOption(option, true);
