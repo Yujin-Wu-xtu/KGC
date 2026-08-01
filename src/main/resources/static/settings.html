@@ -3,93 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>知微智学 - 模型调优设置</title>
+    <title>知微智学 - 系统设置</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --sidebar-w: 260px;
             --primary: #2563eb;
+            --primary-hover: #1d4ed8;
             --bg-body: #f8fafc;
             --bg-card: #ffffff;
             --text-dark: #0f172a;
             --text-muted: #64748b;
             --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warn: #f59e0b;
         }
 
-        body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-dark);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
+        body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-dark); display: flex; height: 100vh; overflow: hidden; }
 
         .sidebar { width: var(--sidebar-w); background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
         .logo-area { height: 70px; display: flex; align-items: center; padding: 0 24px; border-bottom: 1px solid var(--border); }
-        .logo-area h1 { font-size: 20px; font-weight: 700; color: var(--primary); margin: 0; }
+        .logo-area h1 { font-size: 20px; font-weight: 700; background: linear-gradient(to right, #2563eb, #8b5cf6); -webkit-background-clip: text; color: transparent; margin: 0; }
         .nav-menu { padding: 24px 16px; flex: 1; }
-        .nav-item {
-            display: flex; align-items: center; padding: 12px 16px;
-            color: var(--text-muted); text-decoration: none; border-radius: 8px; margin-bottom: 8px; font-weight: 500;
-        }
+        .nav-item { display: flex; align-items: center; padding: 12px 16px; color: var(--text-muted); text-decoration: none; border-radius: 8px; margin-bottom: 8px; font-weight: 500; }
         .nav-item:hover { background-color: #f8fafc; color: var(--primary); }
-        .nav-item.active { background-color: #eff6ff; color: var(--primary); }
+        .nav-item.active { background-color: #eff6ff; color: var(--primary); font-weight: 600; }
         .nav-icon { margin-right: 12px; font-size: 18px; }
 
         .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
         .header { height: 70px; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 10; }
         .page-title { font-size: 18px; font-weight: 600; margin: 0; }
 
+        .user-chip { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+        .logout-btn { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
+        .logout-btn:hover { border-color: var(--danger); color: var(--danger); background: #fef2f2; }
+
         .container { padding: 32px; max-width: 1000px; margin: 0 auto; width: 100%; box-sizing: border-box; }
 
-        .settings-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 24px;
-        }
+        .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .panel h3 { font-size: 16px; margin: 0 0 20px 0; border-bottom: 1px solid var(--border); padding-bottom: 14px; display: flex; align-items: center; gap: 8px; }
 
-        .panel {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 32px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            margin-bottom: 24px;
-        }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: var(--text-muted); }
+        .info-value { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .info-value .mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; }
 
-        .panel h3 { font-size: 16px; margin: 0 0 24px 0; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+        .badge { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge-ok { background: #ecfdf5; color: var(--success); border: 1px solid #a7f3d0; }
+        .badge-err { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+        .badge-warn { background: #fffbeb; color: var(--warn); border: 1px solid #fde68a; }
+        .badge-gray { background: #f1f5f9; color: var(--text-muted); border: 1px solid #e2e8f0; }
 
-        .form-group { margin-bottom: 24px; }
-        .form-group label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 8px; color: var(--text-dark); }
-        .form-group .sub-label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
-        
-        .form-control { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 14px; outline: none; transition: 0.2s; }
-        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-        
-        textarea.form-control { resize: vertical; min-height: 120px; font-family: monospace; background: #f8fafc; }
-
-        /* Range Slider Styling */
-        .slider-wrapper { display: flex; align-items: center; gap: 16px; }
-        .range-slider { flex: 1; accent-color: var(--primary); }
-        .range-val { width: 40px; font-size: 14px; font-weight: 600; text-align: center; background: #eff6ff; color: var(--primary); padding: 4px; border-radius: 4px; }
-
-        /* Toggle */
-        .toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; font-size: 14px; font-weight: 500; }
-        .toggle { position: relative; width: 44px; height: 24px; background: var(--primary); border-radius: 12px; cursor: pointer; }
-        .toggle::after { content: ''; position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-        
-        .toggle.off { background: #cbd5e1; }
-        .toggle.off::after { left: 2px; right: auto; }
-
-        .btn-save { background: var(--primary); color: white; padding: 10px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 16px; }
-        .btn-save:hover { background: #1d4ed8; }
-
-        .stat-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 16px; }
-        .stat-num { font-size: 24px; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .stat-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-align: center; }
+        .stat-num { font-size: 28px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
         .stat-desc { font-size: 12px; color: var(--text-muted); }
 
+        .refresh-btn { background: var(--primary); color: white; padding: 8px 18px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 13px; }
+        .refresh-btn:hover { background: var(--primary-hover); }
+        .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .note { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #1d4ed8; margin-top: 16px; line-height: 1.6; }
+
+        .loading { color: var(--text-muted); font-size: 14px; padding: 20px 0; }
+        .error-banner { background: #fef2f2; border: 1px solid #fecaca; color: var(--danger); border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 16px; }
     </style>
 </head>
 <body>
@@ -117,120 +97,175 @@
             </a>
             <a href="settings.html" class="nav-item active">
                 <span class="nav-icon">⚙️</span>
-                模型调优设置
+                系统设置
             </a>
         </nav>
     </aside>
 
     <main class="main-content">
         <header class="header">
-            <h2 class="page-title">大语言模型配置与系统设置</h2>
+            <h2 class="page-title">系统设置与运行状态</h2>
+            <div class="user-chip">
+                <span id="userName" style="font-size: 14px; font-weight: 500;">未登录</span>
+                <div class="user-avatar" id="userAvatar">?</div>
+                <button class="logout-btn" onclick="logout()">退出登录</button>
+            </div>
         </header>
 
         <div class="container">
-            <div class="settings-grid">
-                
-                <div class="left-col">
-                    <div class="panel">
-                        <h3>DeepSeek 大模型 Prompt 工程调优</h3>
-                        
-                        <div class="form-group">
-                            <label>系统 System Prompt (预设角色设定)</label>
-                            <span class="sub-label">告诉模型它扮演的角色及抽取图谱的原则，越严谨抽取结构越好。</span>
-                            <textarea class="form-control" rows="4">你是一位专注于高等教育课程的资深知识图谱建模专家。你需要对用户上传的学术材料进行深度语义解析，剔除无效口语化表达，精准提取具有包容性和上下级关系的知识层级。</textarea>
-                        </div>
+            <div id="errorBanner" class="error-banner" style="display:none;"></div>
 
-                        <div class="form-group">
-                            <label>用户指令 User Prompt (输出格式规范)</label>
-                            <span class="sub-label">约束模型输出的严格 JSON 格式。</span>
-                            <textarea class="form-control" rows="8">请基于上述内容，以JSON格式输出知识图谱。
-包含两个数组：
-1. "nodes": [{"name": "节点名称"}, ...]
-2. "links": [{"source": "父节点", "target": "子节点"}, ...]
-要求：保持绝对严谨的层级关系，不要输出JSON以外的任何冗余寒暄字符。</textarea>
-                        </div>
-                        
-                        <button class="btn-save" onclick="alert('Prompt 保存成功，立即生效！')">保存 Prompt 模板</button>
+            <!-- 运行状态总览 -->
+            <div class="panel">
+                <h3>🖥️ 系统运行状态</h3>
+                <div class="info-row">
+                    <span class="info-label">DeepSeek 模型</span>
+                    <span class="info-value"><span class="mono" id="modelName">加载中...</span></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">DeepSeek API Key</span>
+                    <span class="info-value" id="apiKeyStatus">加载中...</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Neo4j 图数据库</span>
+                    <span class="info-value" id="neo4jStatus">检测中...</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Neo4j 连接地址</span>
+                    <span class="info-value"><span class="mono" id="neo4jUri" style="color: var(--text-muted);">加载中...</span></span>
+                </div>
+                <div style="margin-top: 20px; display: flex; align-items: center; gap: 12px;">
+                    <button class="refresh-btn" id="refreshBtn" onclick="loadSystemStatus()">🔄 重新检测</button>
+                    <span style="font-size: 12px; color: var(--text-muted);">最后更新：<span id="lastUpdated">-</span></span>
+                </div>
+            </div>
+
+            <!-- 平台数据统计 -->
+            <div class="panel">
+                <h3>📊 平台数据统计</h3>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-num" id="courseCount">-</div>
+                        <div class="stat-desc">课程总数</div>
                     </div>
-
-                    <div class="panel">
-                        <h3>Neo4j 图数据库同步配置</h3>
-                        
-                        <div class="form-group">
-                            <label>Neo4j Aura URI</label>
-                            <input type="text" class="form-control" value="neo4j+s://<YOUR-INSTANCE-ID>.databases.neo4j.io">
-                        </div>
-
-                        <div style="display: flex; gap: 16px;">
-                            <div class="form-group" style="flex:1;">
-                                <label>用户名</label>
-                                <input type="text" class="form-control" value="neo4j">
-                            </div>
-                            <div class="form-group" style="flex:1;">
-                                <label>密码</label>
-                                <input type="password" class="form-control" value="••••••••••••••">
-                            </div>
-                        </div>
-
-                        <button class="btn-save" onclick="alert('测试连接成功！')">测试连接并保存</button>
+                    <div class="stat-box">
+                        <div class="stat-num" id="fileCount">-</div>
+                        <div class="stat-desc">教学资源文件</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-num" id="nodeCount">-</div>
+                        <div class="stat-desc">图谱知识节点</div>
                     </div>
                 </div>
+            </div>
 
-                <div class="right-col">
-                    <div class="panel">
-                        <h3>模型推理参数 (Hyperparameters)</h3>
-                        
-                        <div class="form-group">
-                            <label>Temperature (温度控制)</label>
-                            <span class="sub-label">数值越低抽取结果越为确定和一致；较高可能导致不稳定的节点推断。</span>
-                            <div class="slider-wrapper">
-                                <input type="range" class="range-slider" min="0" max="200" value="20" oninput="document.getElementById('tempVal').innerText=(this.value/100).toFixed(2)">
-                                <div class="range-val" id="tempVal">0.20</div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Max Tokens</label>
-                            <span class="sub-label">单次解析产生的最大节点关系字符数。</span>
-                            <div class="slider-wrapper">
-                                <input type="range" class="range-slider" min="500" max="8000" value="4096" step="1" oninput="document.getElementById('tokenVal').innerText=this.value">
-                                <div class="range-val" style="width: 50px;" id="tokenVal">4096</div>
-                            </div>
-                        </div>
-
-                        <div style="margin-top: 32px;">
-                            <div class="toggle-row">
-                                <span>启动语义重叠合并去重算法</span>
-                                <div class="toggle" onclick="this.classList.toggle('off')"></div>
-                            </div>
-                            <div class="toggle-row">
-                                <span>失败则自动 Fallback 备用数据</span>
-                                <div class="toggle" onclick="this.classList.toggle('off')"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="panel">
-                        <h3>平台调用统计</h3>
-                        
-                        <div class="stat-box">
-                            <div class="stat-num">348.5K</div>
-                            <div class="stat-desc">本月已消耗 Token 数量</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-num">$ 0.12</div>
-                            <div class="stat-desc">预估消耗金额 (DeepSeek)</div>
-                        </div>
-                        <div class="stat-box" style="margin-bottom:0;">
-                            <div class="stat-num">1.4 s</div>
-                            <div class="stat-desc">平均知识抽取延迟</div>
-                        </div>
-                    </div>
+            <!-- 模型配置说明 -->
+            <div class="panel">
+                <h3>🤖 大模型解析配置</h3>
+                <div class="note">
+                    <strong>当前解析链路：</strong>教师上传课件 → 后端提取文本 → DeepSeek 大模型抽取知识节点与关系 → 存入 Neo4j 图数据库 → 前端可视化。
+                    <br><br>
+                    <strong>模型抽取参数由后端统一管理</strong>（`application.properties` 中 `deepseek.model` 配置，抽取时 temperature=0 以保证结果稳定）。
+                    如需调整模型或 Prompt 模板，请联系管理员修改服务器配置，前端暂不开放直接编辑，避免误操作影响线上解析。
                 </div>
-
             </div>
         </div>
-</main>
+    </main>
 
+    <script>
+        const token = localStorage.getItem('kgc_token') || sessionStorage.getItem('kgc_token');
+
+        // ===================== 用户信息 =====================
+        async function loadUserProfile() {
+            if (!token) {
+                document.getElementById('userName').textContent = '未登录';
+                return;
+            }
+            try {
+                const res = await fetch('/api/v1/auth/me', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('获取用户信息失败');
+                const profile = await res.json();
+                document.getElementById('userName').textContent = profile.username;
+                document.getElementById('userAvatar').textContent = profile.username.charAt(0).toUpperCase();
+                if (profile.role) {
+                    document.getElementById('userName').textContent += ' · ' + (profile.role === 'TEACHER' ? '教师' : '学生');
+                }
+            } catch (e) {
+                document.getElementById('userName').textContent = '未登录';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('kgc_token');
+            sessionStorage.removeItem('kgc_token');
+            window.location.href = 'login.html';
+        }
+
+        // ===================== 系统状态 =====================
+        async function loadSystemStatus() {
+            const btn = document.getElementById('refreshBtn');
+            btn.disabled = true;
+            btn.textContent = '检测中...';
+            try {
+                const res = await fetch('/api/v1/system/status');
+                if (!res.ok) throw new Error('系统状态接口不可用');
+                const data = await res.json();
+
+                // DeepSeek
+                document.getElementById('modelName').textContent = data.deepseek?.model || '未知';
+                const apiBadge = document.getElementById('apiKeyStatus');
+                if (data.deepseek?.apiKeyConfigured) {
+                    apiBadge.innerHTML = '<span class="badge badge-ok">✓ 已配置</span>';
+                } else {
+                    apiBadge.innerHTML = '<span class="badge badge-err">✗ 未配置（解析将失败）</span>';
+                }
+
+                // Neo4j
+                const neo4jBadge = document.getElementById('neo4jStatus');
+                const uriEl = document.getElementById('neo4jUri');
+                if (data.neo4j?.connected) {
+                    neo4jBadge.innerHTML = '<span class="badge badge-ok">✓ 已连接</span>';
+                } else {
+                    neo4jBadge.innerHTML = '<span class="badge badge-err">✗ 连接失败</span>';
+                }
+                uriEl.textContent = data.neo4j?.uri || '未知';
+
+                // 统计
+                document.getElementById('courseCount').textContent = data.stats?.courseCount ?? '-';
+                document.getElementById('fileCount').textContent = data.stats?.fileCount ?? '-';
+                const nodeCountEl = document.getElementById('nodeCount');
+                if (data.neo4j?.nodeCount != null) {
+                    nodeCountEl.textContent = data.neo4j.nodeCount;
+                } else {
+                    nodeCountEl.textContent = '-';
+                }
+
+                document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+                hideError();
+            } catch (e) {
+                showError('无法获取系统状态：' + e.message + '。请确认后端服务已启动。');
+                document.getElementById('lastUpdated').textContent = '-';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔄 重新检测';
+            }
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('errorBanner');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+        function hideError() {
+            document.getElementById('errorBanner').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUserProfile();
+            loadSystemStatus();
+        });
+    </script>
 </body>
 </html>
