@@ -63,6 +63,12 @@ public class CourseService {
         return courseRepository.save(course);
     }
 
+    public Course setCourseGraphSaved(Long id, boolean graphSaved) {
+        Course course = getCourse(id);
+        course.setGraphSaved(graphSaved);
+        return courseRepository.save(course);
+    }
+
     public List<Course> listPublishedCourses() {
         return courseRepository.findByPublishedTrueOrderByCreatedAtDesc();
     }

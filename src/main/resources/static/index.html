@@ -254,6 +254,41 @@
             border-color: #ef4444;
             color: #ef4444;
         }
+        .toolbar-btn.save-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 2px 8px rgba(16,185,129,0.25);
+        }
+        .toolbar-btn.save-btn:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16,185,129,0.35);
+        }
+
+        /* 图谱保存状态徽章 */
+        .graph-status-badge {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            white-space: nowrap;
+        }
+        .graph-status-badge.saved {
+            color: #059669;
+            border-color: rgba(16,185,129,0.4);
+            background: rgba(236,253,245,0.9);
+        }
+        .graph-status-badge.unsaved {
+            color: #d97706;
+            border-color: rgba(245,158,11,0.4);
+            background: rgba(255,251,235,0.9);
+        }
 
         /* 右键上下文菜单 */
         .context-menu {
@@ -452,9 +487,11 @@
     <div class="main-content">
         <!-- 编辑工具栏 -->
         <div class="graph-toolbar">
+            <span class="graph-status-badge" id="graphStatusBadge">图谱状态加载中...</span>
             <button class="toolbar-btn" onclick="showAddNodeModal()">➕ 添加节点</button>
             <button class="toolbar-btn" onclick="enterLinkMode()">🔗 添加关系</button>
             <button class="toolbar-btn" onclick="refreshGraph()">🔄 刷新图谱</button>
+            <button class="toolbar-btn save-btn" onclick="saveGraph()">💾 保存图谱</button>
         </div>
 
         <!-- 连线模式提示条 -->
@@ -501,6 +538,9 @@
                 addLog(`[系统联动] 已成功接收资源库免密传输文件：${autoLoadedFileName}`, 'info');
             }
 
+            // --- 加载课程图谱保存状态 ---
+            loadGraphSavedStatus();
+
             // --- 从后端 API 恢复该课程已有的图谱数据 ---
             fetch(`${API_BASE}/courses/${courseId}/graph`)
                 .then(res => res.json())
@@ -517,6 +557,49 @@
                     addLog(`[离线模式] 后端不可用，等待手动解析。`, 'warn');
                 });
         });
+
+        // ===================== 图谱保存：绑定课程与图谱 =====================
+
+        /** 加载课程信息并显示图谱保存状态 */
+        async function loadGraphSavedStatus() {
+            const badge = document.getElementById('graphStatusBadge');
+            try {
+                const res = await fetch(`${API_BASE}/courses/${courseId}`);
+                if (!res.ok) throw new Error('课程不存在');
+                const course = await res.json();
+                if (course.graphSaved) {
+                    badge.textContent = '✅ 图谱已保存并绑定该课程';
+                    badge.className = 'graph-status-badge saved';
+                } else {
+                    badge.textContent = '⏳ 图谱未保存（编辑后点击保存）';
+                    badge.className = 'graph-status-badge unsaved';
+                }
+            } catch (e) {
+                badge.textContent = '⚠️ 无法获取图谱状态';
+                badge.className = 'graph-status-badge';
+            }
+        }
+
+        /** 保存图谱：将当前课程与图谱绑定 */
+        async function saveGraph() {
+            const badge = document.getElementById('graphStatusBadge');
+            addLog('[保存] 正在保存并绑定课程图谱...', 'info');
+            try {
+                const res = await fetch(`${API_BASE}/courses/${courseId}/graph/save`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || '保存失败');
+                badge.textContent = '✅ 图谱已保存并绑定该课程';
+                badge.className = 'graph-status-badge saved';
+                const nodeInfo = data.nodeCount != null
+                    ? `共 ${data.nodeCount} 个节点`
+                    : '节点数暂不可统计（图数据库未连接）';
+                addLog(`[保存成功] 课程「${data.courseName}」已与图谱绑定，${nodeInfo}`, 'success');
+            } catch (e) {
+                addLog('[保存失败] ' + e.message, 'error');
+            }
+        }
         // 初始化 ECharts
         const chartDom = document.getElementById('graph-container');
         const myChart = echarts.init(chartDom, null, { renderer: 'canvas' });

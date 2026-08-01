@@ -43,6 +43,10 @@ public class Course {
     @Column(nullable = false, columnDefinition = "boolean default false")
     private Boolean published = false;
 
+    /** 是否已保存并绑定图谱（教师点击"保存图谱"后置为 true） */
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private Boolean graphSaved = false;
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
 

@@ -109,6 +109,16 @@
                 const res = await fetch(`/api/v1/courses/${courseId}/graph`);
                 if (!res.ok) throw new Error('Failed to fetch graph data');
                 const data = await res.json();
+                if (!data.nodes || data.nodes.length === 0) {
+                    document.getElementById('courseTitle').innerText = '该课程暂无已保存的图谱';
+                    document.getElementById('graph-container').innerHTML = `
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#64748b;">
+                            <div style="font-size:48px; margin-bottom:16px;">🕸️</div>
+                            <div style="font-size:16px; font-weight:500;">教师尚未保存该课程的知识图谱</div>
+                            <div style="font-size:13px; margin-top:8px;">请稍后刷新页面重试</div>
+                        </div>`;
+                    return;
+                }
                 renderECharts(data.nodes, data.links);
             } catch (error) {
                 console.error('加载图谱失败:', error);

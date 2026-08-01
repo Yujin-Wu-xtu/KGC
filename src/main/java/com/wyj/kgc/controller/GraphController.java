@@ -38,6 +38,16 @@ public class GraphController {
         return ResponseEntity.ok(knowledgeGraphService.getGraphDataByCourse(courseId));
     }
 
+    /** POST /api/v1/courses/{courseId}/graph/save — 保存并绑定课程图谱（教师编辑完成后点击保存） */
+    @PostMapping("/courses/{courseId}/graph/save")
+    public ResponseEntity<?> saveCourseGraph(@PathVariable Long courseId) {
+        try {
+            return ResponseEntity.ok(knowledgeGraphService.saveCourseGraph(courseId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     // ===================== 节点 CRUD =====================
 
     /** POST /api/v1/courses/{courseId}/graph/nodes — 添加节点 */

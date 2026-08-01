@@ -247,7 +247,8 @@
                         progress: 0, // Mock progress for now
                         status: '可学习',
                         coverClass: 'cover-new',
-                        isNew: false
+                        isNew: false,
+                        graphSaved: tc.graphSaved === true
                     };
                 });
                 renderCourses(coursesToRender);
@@ -265,6 +266,11 @@
                 let coverContent = `<span class="course-tag">${course.tag}</span>`;
                 let titleContent = course.title;
 
+                // 图谱未保存时，学生无法进入图谱学习
+                const graphAction = course.graphSaved
+                    ? `<a href="student_graph.html?courseId=${course.id}" class="btn-action btn-primary">进入图谱学习</a>`
+                    : `<span class="btn-action btn-primary" style="background:#cbd5e1; cursor:not-allowed;" title="教师尚未保存该课程图谱">图谱未生成</span>`;
+
                 const cardHTML = `
                     <div class="course-card">
                         <div class="course-cover ${course.coverClass}">
@@ -278,7 +284,7 @@
                                 <div class="progress-text"><span>学习进度 ${course.progress}%</span> <span>${course.status}</span></div>
                             </div>
                             <div class="course-actions">
-                                <a href="student_graph.html?courseId=${course.id}" class="btn-action btn-primary">进入图谱学习</a>
+                                ${graphAction}
                                 <a href="student_resources.html?courseId=${course.id}" class="btn-action btn-secondary">课件资源</a>
                             </div>
                         </div>

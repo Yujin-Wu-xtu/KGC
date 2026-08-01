@@ -3,10 +3,12 @@ package com.wyj.kgc.service.kg;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyj.kgc.entity.ResourceFile;
+import com.wyj.kgc.entity.Course;
 import com.wyj.kgc.entity.neo4j.KnowledgeNode;
 import com.wyj.kgc.entity.neo4j.KnowledgeRelation;
 import com.wyj.kgc.repository.jpa.ResourceFileRepository;
 import com.wyj.kgc.repository.neo4j.KnowledgeNodeRepository;
+import com.wyj.kgc.service.CourseService;
 import com.wyj.kgc.service.DeepSeekClient;
 import com.wyj.kgc.utils.PdfUtils;
 import com.wyj.kgc.utils.WordUtils;
@@ -30,6 +32,7 @@ public class KnowledgeGraphService {
     private final WordUtils wordUtils;
     private final PptUtils pptUtils;
     private final ObjectMapper objectMapper;
+    private final CourseService courseService;
 
     @Autowired
     public KnowledgeGraphService(ResourceFileRepository resourceFileRepository,
@@ -39,7 +42,8 @@ public class KnowledgeGraphService {
             PdfUtils pdfUtils,
             WordUtils wordUtils,
             PptUtils pptUtils,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            CourseService courseService) {
         this.resourceFileRepository = resourceFileRepository;
         this.knowledgeNodeRepository = knowledgeNodeRepository;
         this.neo4jClient = neo4jClient;
@@ -48,6 +52,7 @@ public class KnowledgeGraphService {
         this.wordUtils = wordUtils;
         this.pptUtils = pptUtils;
         this.objectMapper = objectMapper;
+        this.courseService = courseService;
     }
 
     public String parseAndSave(Long fileId) {
@@ -173,6 +178,34 @@ public class KnowledgeGraphService {
     public com.wyj.kgc.dto.graph.GraphDataDTO getGraphDataByCourse(Long courseId) {
         List<KnowledgeNode> nodes = knowledgeNodeRepository.findByCourseId(courseId);
         return buildGraphDataDTO(nodes, courseId);
+    }
+
+    /**
+     * 保存课程图谱：将当前课程的图谱与课程绑定。
+     * 1. 校验课程存在。
+     * 2. 统计该课程在 Neo4j 中的节点数（图数据库不可用时返回 null，不阻断保存）。
+     * 3. 将课程 graphSaved 置为 true。
+     *
+     * @param courseId 课程 ID
+     * @return 保存结果：课程信息 + 节点数（可能为 null 表示图数据库暂不可用）
+     */
+    public java.util.Map<String, Object> saveCourseGraph(Long courseId) {
+        Course course = courseService.setCourseGraphSaved(courseId, true);
+
+        // 统计节点数；Neo4j 异常时给出 null，不阻断绑定流程
+        Integer nodeCount = null;
+        try {
+            nodeCount = knowledgeNodeRepository.findByCourseId(courseId).size();
+        } catch (Exception neo4jEx) {
+            System.out.println("WARN: Neo4j 节点统计失败（不影响保存）: " + neo4jEx.getMessage());
+        }
+
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("courseId", course.getId());
+        result.put("courseName", course.getName());
+        result.put("graphSaved", true);
+        result.put("nodeCount", nodeCount);
+        return result;
     }
 
     /**
